@@ -6,15 +6,15 @@ l'installation sur toutes les éditions du système.
 
 | Cible | Preuve au 10 octobre 2026 | Limite |
 | --- | --- | --- |
-| macOS Apple Silicon | Source locale Python 3.11.14, MIDI/XML/PDF ; runner macOS 14 Python 3.11.9, 190 tests et smoke installée réussis | PDF runner N/A (MuseScore absent). Application autonome arm64 : morceau réel → PDF/XML/MIDI réussi avec MuseScore 4.6.5 ; 4.7.5 local instable (SIGABRT) |
-| Linux Ubuntu 22.04 | Python 3.11.17, 190 tests réussis et vrais exports MIDI/XML/PDF CI | MuseScore 3 : correction de l’option `--no-audio` validée |
-| Windows Server 2022 x64 | Python 3.11.9, 190 tests + imports/page HTTP/MIDI/XML ; preview `.exe` compilée et lancée, capture contrôlée | PDF natif MuseScore 4.7.5 et trois forwards CPU réussis ; FFprobe absent, audio validation N/A |
-| Windows Server 2025 x64 | Python 3.11.9, 190 tests + imports/page HTTP/MIDI/XML réussis | PDF N/A sans MuseScore ; aucun test Windows client |
+| macOS Apple Silicon | Source locale Python 3.11.14, MIDI/XML/PDF ; runner macOS 14 Python 3.11.9, 198 tests et smoke installée réussis | PDF runner N/A (MuseScore absent). Application autonome arm64 : morceau réel → PDF/XML/MIDI réussi avec MuseScore 4.6.5 ; 4.7.5 local instable (SIGABRT) |
+| Linux Ubuntu 22.04 | Python 3.11.17, 198 tests réussis et vrais exports MIDI/XML/PDF CI | MuseScore 3 : correction de l’option `--no-audio` validée |
+| Windows Server 2022 x64 | Python 3.11.9, 198 tests + imports/page HTTP/MIDI/XML ; preview `.exe` compilée et lancée, capture contrôlée | PDF natif MuseScore 4.7.5 et trois forwards CPU réussis ; FFprobe absent, audio validation N/A |
+| Windows Server 2025 x64 | Python 3.11.9, 198 tests + imports/page HTTP/MIDI/XML réussis | PDF N/A sans MuseScore ; aucun test Windows client |
 | Windows 10 x64 | Non testé sur machine ou VM réelle | Ne pas annoncer support certifié |
 | Windows 11 x64 | Non testé sur machine ou VM réelle | Ne pas annoncer support certifié |
 | WSL1 Ubuntu 24.04 | Python 3.12.3, 190 tests, validation audio, MIDI/XML/PDF réussis ; artefacts récupérés | Hôte Server 2022, noyau réel 4.4.0-20348-Microsoft ; WSL2 et clients 10/11 restent à tester |
 
-Preuves : [source quatre OS tous réussis, commit 7bbe025](https://github.com/gaelcado/Song2Agostini/actions/runs/38048392543),
+Preuves : [source quatre OS, 198 tests tous réussis, commit 9c2f4d6](https://github.com/gaelcado/Song2Agostini/actions/runs/38049467091),
 [preview Windows/macOS, commit 0a534ce](https://github.com/gaelcado/Song2Agostini/actions/runs/38047450886),
 [WSL1 réussi, commit 764af67](https://github.com/gaelcado/Song2Agostini/actions/runs/38048594761),
 [runtimes CPU Linux et Windows, résultat obtenu](https://github.com/gaelcado/Song2Agostini/actions/runs/38047745411),
