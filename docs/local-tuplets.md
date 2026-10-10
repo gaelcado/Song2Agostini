@@ -8,8 +8,8 @@ moyen sur la grille binaire doit atteindre 0,035 noire. Aucune note n’est
 ajoutée pour compléter un motif. Ce critère est un diagnostic non calibré,
 ni une reconnaissance musicale validée ni une promesse de fidélité.
 
-Les temps sélectionnés utilisent 12 divisions par noire ; les autres conservent
-les positions de doubles croches. Les triolets affichent le rapport 3:2 et les
+Une sélection locale fait utiliser 12 divisions par noire à toute la partition ;
+les temps non sélectionnés conservent les positions de doubles croches. Les triolets affichent le rapport 3:2 et les
 bornes du groupe, y compris lorsque le groupe débute par un silence. Les
 signatures 6/8 et 12/8 conservent leurs groupes de trois croches ordinaires.
 Le MIDI brut et les événements du moteur restent inchangés. Les collisions
@@ -20,7 +20,7 @@ MusicXML distingue le rapport de durée
 et son affichage
 [tuplet](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/tuplet/).
 Les tests synthétiques contrôlent durée des deux voix, accords, silences,
-ratio, parenthèses, ordre XML et conservation des événements. Ce sont des tests
+ratio, bornes de triolets, ordre XML et conservation des événements. Ce sont des tests
 logiciels, pas une évaluation musicale.
 
 Les flas restent une limite de détection. Le PeakPicker ADTOF installé travaille
