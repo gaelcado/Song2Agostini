@@ -12,7 +12,7 @@ cd Song2Agostini
 python3.11 scripts/bootstrap.py --desktop
 ```
 
-Installez aussi FFmpeg et MuseScore depuis leurs distributions officielles. Le contrôle suivant indique les composants manquants :
+Installez aussi FFmpeg et MuseScore depuis leurs distributions officielles. Sur Mac, nos tests utilisent MuseScore **4.6.5** ; la version 4.7.5 a interrompu certains exports. Le contrôle suivant indique les composants manquants :
 
 ```sh
 python3.11 scripts/bootstrap.py --check --desktop

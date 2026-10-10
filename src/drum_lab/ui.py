@@ -8,6 +8,7 @@ import secrets
 import shutil
 import subprocess
 import threading
+import time
 import traceback
 import uuid
 from http.cookies import SimpleCookie
@@ -20,6 +21,8 @@ from .processes import run_external
 
 MAX_BYTES = 200 * 1024 * 1024
 MAX_DURATION = 30 * 60
+REJECT_DRAIN_BYTES = 64 * 1024
+REJECT_DRAIN_SECONDS = .250
 WEB = Path(__file__).with_name("web")
 ARTIFACT_TYPES = {
     "pdf": ("application/pdf", "partition.pdf"),
@@ -179,7 +182,41 @@ class Handler(BaseHTTPRequestHandler):
             return None
         return token if token in self.server.app.sessions else None
 
+    def _drain_rejected_body(self):
+        # Closing an unread small POST may reset TCP and hide its HTTP refusal on Windows.
+        if not getattr(self, '_post_body_unread', False):
+            return
+        self._post_body_unread = False
+        lengths = self.headers.get_all('Content-Length', [])
+        if len(lengths) != 1 or 'Transfer-Encoding' in self.headers:
+            return
+        try:
+            remaining = int(lengths[0])
+        except ValueError:
+            return
+        if not 0 < remaining <= REJECT_DRAIN_BYTES:
+            return
+        previous_timeout = self.connection.gettimeout()
+        deadline = time.monotonic() + REJECT_DRAIN_SECONDS
+        try:
+            while remaining:
+                budget = deadline - time.monotonic()
+                if budget <= 0:
+                    break
+                self.connection.settimeout(budget)
+                # read1 performs at most one underlying read; slow drips cannot renew the budget.
+                chunk = self.rfile.read1(min(4096, remaining))
+                if not chunk:
+                    break
+                remaining -= len(chunk)
+        except OSError:
+            pass  # Still send the same HTTP refusal; never admit an invalid request.
+        finally:
+            self.connection.settimeout(previous_timeout)
+
     def _send(self, status, data, mime, extra=None):
+        if self.command == 'POST' and status >= 400:
+            self._drain_rejected_body()
         self.send_response(status)
         self.send_header("Content-Type", mime)
         self.send_header("Content-Length", str(len(data)))
@@ -258,6 +295,7 @@ class Handler(BaseHTTPRequestHandler):
             self._send(200, artifact.read_bytes(), mime, {"Content-Disposition": disposition})
 
     def do_POST(self):
+        self._post_body_unread = True
         self.connection.settimeout(60)
         if not self._security():
             return
@@ -297,6 +335,7 @@ class Handler(BaseHTTPRequestHandler):
                        title=Path(filename).stem[:120])
             app.jobs[job_id] = job
         try:
+            self._post_body_unread = False
             remaining = size
             with job["input"].open("wb") as stream:
                 while remaining:

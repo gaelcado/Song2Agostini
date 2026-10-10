@@ -110,3 +110,81 @@ def test_visual_motor_label_requires_exact_piece_and_pdf_hash(status,text):
  assert motor_visual_label(feedback,'bench_01','changed')==VISUAL_PENDING
  assert motor_visual_label(feedback,'bench_02','exact')==VISUAL_PENDING
  assert motor_visual_label({},'bench_01','exact')==VISUAL_PENDING
+
+
+def rejection_handler(reader, headers, status=403):
+    """Exercise the real error response without network timing or any private assets."""
+    from email.message import Message
+    from io import BytesIO
+    from types import SimpleNamespace
+    from drum_lab.ui import Handler
+    handler=Handler.__new__(Handler)
+    handler.command='POST';handler._post_body_unread=True
+    handler.headers=Message()
+    for name,value in headers.items():handler.headers[name]=value
+    handler.rfile=reader;handler.wfile=BytesIO();handler.statuses=[];handler.timeouts=[]
+    handler.connection=SimpleNamespace(gettimeout=lambda:60,settimeout=handler.timeouts.append)
+    handler.send_response=handler.statuses.append
+    handler.send_header=lambda *args:None
+    handler.end_headers=lambda:None
+    return handler
+
+
+def test_small_rejected_post_is_consumed_before_same_forbidden_response():
+    from io import BytesIO
+    reader=BytesIO(b'private request ignored')
+    handler=rejection_handler(reader,{'Content-Length':str(len(reader.getvalue()))})
+    def respond(status):
+        assert reader.tell()==len(reader.getvalue())
+        handler.statuses.append(status)
+    handler.send_response=respond
+    handler._json(403,{'error':'Session invalide.'})
+    assert handler.statuses==[403] and json.loads(handler.wfile.getvalue())['error']=='Session invalide.'
+    assert handler.timeouts[-1]==60 and handler._post_body_unread is False
+
+
+@pytest.mark.parametrize('headers',[
+    {'Content-Length':'65537'},
+    {'Content-Length':'20','Transfer-Encoding':'chunked'},
+    {'Content-Length':'invalid'},
+    {},
+])
+def test_large_chunked_or_unknown_rejection_never_reads_body(headers):
+    from types import SimpleNamespace
+    reader=SimpleNamespace(read1=lambda size:pytest.fail('Unbounded rejected body must not be read'))
+    handler=rejection_handler(reader,headers)
+    handler._json(404,{'error':'Ressource introuvable.'})
+    assert handler.statuses==[404] and handler.timeouts==[]
+
+
+def test_partial_rejection_timeout_preserves_refusal_and_restores_socket():
+    from types import SimpleNamespace
+    reads=[]
+    def timeout(size):
+        reads.append(size);raise TimeoutError('partial upload')
+    handler=rejection_handler(SimpleNamespace(read1=timeout),{'Content-Length':'10'})
+    handler._json(403,{'error':'Session invalide.'})
+    assert handler.statuses==[403] and reads==[10]
+    assert 0<handler.timeouts[0]<=.250 and handler.timeouts[-1]==60
+
+
+def test_rejected_slow_drip_has_one_global_deadline(monkeypatch):
+    from types import SimpleNamespace
+    import drum_lab.ui as module
+    times=iter([0,.100,.251])
+    monkeypatch.setattr(module.time,'monotonic',lambda:next(times))
+    reads=[]
+    def drip(size):reads.append(size);return b'x'
+    handler=rejection_handler(SimpleNamespace(read1=drip),{'Content-Length':'10'})
+    handler._json(403,{'error':'Session invalide.'})
+    assert handler.statuses==[403] and reads==[10]
+    assert handler.timeouts==[.150,60]
+
+
+def test_consumed_or_partially_accepted_upload_is_not_read_again():
+    from types import SimpleNamespace
+    reader=SimpleNamespace(read1=lambda size:pytest.fail('Upload already handled must not be reread'))
+    handler=rejection_handler(reader,{'Content-Length':'20'})
+    handler._post_body_unread=False
+    handler._json(400,{'error':'Transfert interrompu.'})
+    assert handler.statuses==[400] and handler.timeouts==[]
