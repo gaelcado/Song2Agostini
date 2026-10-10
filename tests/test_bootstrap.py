@@ -41,3 +41,11 @@ def test_windows_cp1252_console_outputs_utf8_diagnostic(tmp_path):
     assert run.returncode==0,run.stderr.decode('utf-8')
     assert '→' in run.stdout.decode('utf-8')
     assert (tmp_path/'log').read_text()=='1\n'
+
+
+def test_tool_override_is_honored_even_with_spaces(tmp_path,monkeypatch):
+    tool=tmp_path/'local tool';tool.write_text('fixture')
+    monkeypatch.setenv('DRUM_LAB_FFMPEG',str(tool))
+    assert installer.find_tool(tmp_path,'ffmpeg')==str(tool)
+    monkeypatch.setenv('DRUM_LAB_FFMPEG',str(tmp_path/'missing'))
+    assert installer.find_tool(tmp_path,'ffmpeg') is None

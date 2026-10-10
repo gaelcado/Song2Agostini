@@ -3,6 +3,7 @@ import hashlib
 import json
 import shutil
 import subprocess
+from .processes import run_external
 from pathlib import Path
 from .files import ROOT, digest, load, write, resource_path, env_python, worker_path, worker_environment, runtime_root, source_file
 
@@ -33,7 +34,7 @@ def separate_kit(audio, out):
         cmd = [str(env_python('kit')), str(worker_path('kit_worker.py')),
                str(audio), str(cache), str(resource_path('configs/kit-model.json'))]
         with (out/'kit-inference.log').open('w') as log:
-            subprocess.run(cmd, env=worker_environment(), check=True, stdout=log, stderr=subprocess.STDOUT, timeout=3600)
+            run_external(cmd, env=worker_environment(), check=True, stdout=log, stderr=subprocess.STDOUT, timeout=3600)
     write(out/'kit-cache.json', {'key': key, **identity})
     shutil.copy2(cache/'complete.json', out/'kit-separation.json')
     return {name: cache/f'{name}.wav' for name in ('kick', 'snare')}

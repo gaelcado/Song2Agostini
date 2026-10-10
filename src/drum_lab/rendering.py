@@ -3,6 +3,7 @@ import os
 import time
 from contextlib import contextmanager
 import subprocess
+from .processes import run_external
 from pathlib import Path
 from .files import ROOT
 
@@ -51,7 +52,7 @@ def render(command,env,out):
     with exclusive_lock(lock):
         for attempt in range(1,4):
             with (out/f'engraving-attempt-{attempt}.log').open('w') as log:
-                result=subprocess.run(command,env=env,stdout=log,stderr=subprocess.STDOUT,timeout=180)
+                result=run_external(command,env=env,stdout=log,stderr=subprocess.STDOUT,timeout=180)
             (out/'engraving.log').write_bytes((out/f'engraving-attempt-{attempt}.log').read_bytes())
             if result.returncode==0:return attempt
             if result.returncode!=-6 or attempt==3:

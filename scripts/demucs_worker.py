@@ -2,6 +2,8 @@
 import os
 import hashlib,json,subprocess,sys,time
 from pathlib import Path
+sys.path.insert(0, str(Path(os.environ.get('DRUM_LAB_RESOURCE_ROOT', Path(__file__).resolve().parents[1]))/'src'))
+from drum_lab.processes import run_external
 import numpy as np
 import soundfile as sf
 import torch
@@ -17,7 +19,7 @@ torch.manual_seed(0); torch.set_num_threads(4)
 pkg=torch.load(weights,map_location='cpu',weights_only=False)
 model=load_model(pkg).cpu().eval()
 sr=model.samplerate
-raw=subprocess.run([os.environ.get('DRUM_LAB_FFMPEG', 'ffmpeg'),'-v','error','-i',str(audio),'-f','f32le','-ar',str(sr),'-ac','2','pipe:1'],check=True,capture_output=True).stdout
+raw=run_external([os.environ.get('DRUM_LAB_FFMPEG', 'ffmpeg'),'-v','error','-i',str(audio),'-f','f32le','-ar',str(sr),'-ac','2','pipe:1'],check=True,capture_output=True).stdout
 wav=torch.from_numpy(np.frombuffer(raw,dtype='<f4').copy().reshape(-1,2).T)
 ref=wav.mean(0);mean=ref.mean();scale=ref.std()
 if not torch.isfinite(scale) or scale<=1e-8: raise ValueError('Audio silencieux ou invalide')

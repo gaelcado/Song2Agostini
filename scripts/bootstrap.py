@@ -54,6 +54,12 @@ def download(url, target, expected):
         partial.unlink(missing_ok=True)
 
 def find_tool(runtime, name):
+    overrides={'ffmpeg':('DRUM_LAB_FFMPEG',),'ffprobe':('DRUM_LAB_FFPROBE',),'musescore':('DRUM_LAB_MUSESCORE','MUSESCORE_EXECUTABLE')}
+    for key in overrides.get(name,()):
+        value=os.environ.get(key)
+        if value:
+            path=Path(value).expanduser()
+            return str(path) if path.is_file() else None
     candidates = [runtime/'tools'/name, runtime/'tools'/(name+'.exe')]
     if name == 'musescore':
         candidates += [runtime/'tools/MuseScore4.exe', runtime/'tools/MuseScore 4/bin/MuseScore4.exe',
@@ -87,7 +93,7 @@ def doctor(source, runtime, engines, config, desktop=False):
             metadata=subprocess.run([str(py),'-c',metadata_code],capture_output=True,text=True,timeout=120)
             status['distributions']=json.loads(metadata.stdout) if metadata.returncode==0 else []
         report['engines'][engine] = status
-    for tool in ('ffmpeg','musescore'):
+    for tool in ('ffmpeg','ffprobe','musescore'):
         path = find_tool(runtime, tool)
         report['tools'][tool] = {'path':path,'available':bool(path)}
     report['models'] = {}

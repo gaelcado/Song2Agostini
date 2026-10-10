@@ -3,6 +3,7 @@ import datetime
 import math
 import shutil
 import subprocess
+from .processes import run_external
 import time
 from pathlib import Path
 
@@ -41,7 +42,7 @@ def probe_audio(audio):
     audio=Path(audio).resolve()
     if audio.suffix.lower() not in ('.wav','.flac','.mp3') or not audio.is_file():
         raise ValueError('Un fichier WAV, FLAC ou MP3 est requis')
-    result=subprocess.run([find_tool('ffprobe') or 'ffprobe','-v','error','-show_format','-show_streams','-of','json',str(audio)],
+    result=run_external([find_tool('ffprobe') or 'ffprobe','-v','error','-show_format','-show_streams','-of','json',str(audio)],
                           check=True,capture_output=True,text=True,timeout=30)
     probe=__import__('json').loads(result.stdout)
     duration=float(probe['format']['duration'])

@@ -5,6 +5,7 @@ import math
 import os
 import shutil
 import subprocess
+from .processes import run_external
 import sys
 import time
 import xml.etree.ElementTree as ET
@@ -47,7 +48,7 @@ def estimate_grid(audio, out, engine='librosa'):
     if engine not in ('librosa','beat_this'): raise ValueError('Moteur de grille inconnu')
     out = Path(out)
     env='beat_this' if engine=='beat_this' else 'adtof'
-    subprocess.run([str(env_python(env)),
+    run_external([str(env_python(env)),
                     str(worker_path('estimate_grid.py')), str(Path(audio).resolve()), str(out.resolve()),'--engine',engine],
                    env=worker_environment(), check=True, timeout=300, capture_output=True, text=True)
     return json.loads(out.read_text())
@@ -355,7 +356,7 @@ def engrave(midi_path, grid, out, title='Batterie - transcription automatique', 
     engine = renderer()
     if not engine: raise RuntimeError('MuseScore absent : MusicXML créé, PDF non rendu')
     env = dict(os.environ, QT_QPA_PLATFORM='cocoa' if sys.platform=='darwin' else 'offscreen')
-    command=[engine, '--no-audio', '-o', str((out / 'score.pdf').resolve()), str(xml_path.resolve())]
+    command=[engine, '-o', str((out / 'score.pdf').resolve()), str(xml_path.resolve())]
     from .rendering import render
     render_attempts=render(command,env,out)
     if not (out / 'score.pdf').is_file(): raise RuntimeError('Export PDF absent')

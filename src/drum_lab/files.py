@@ -4,6 +4,7 @@ import json
 import os
 import shutil
 import subprocess
+from .processes import run_external
 import sys
 from pathlib import Path
 
@@ -105,7 +106,7 @@ def installed_package_path(environment, package, *, weights=False):
     """Ask the isolated interpreter; wheels/editable installs differ across platforms."""
     code = (f'import {package} as package; print(package.get_default_weights_path())' if weights else
             f'import importlib.util; print(next(iter(importlib.util.find_spec({package!r}).submodule_search_locations)))')
-    result = subprocess.run([str(env_python(environment)), '-c', code], check=True,
+    result = run_external([str(env_python(environment)), '-c', code], check=True,
                             capture_output=True, text=True, timeout=60, env=worker_environment())
     return Path(result.stdout.strip().splitlines()[-1])
 

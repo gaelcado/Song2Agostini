@@ -134,6 +134,13 @@ def main():
     if qt_notice.exists():shutil.copy2(qt_notice,application_notices/'qtwebengine_licenses.html')
     python_license=Path(subprocess.check_output([str(main_environment),'-c','import sys;print(sys.base_prefix)'],text=True).strip())/'LICENSE.txt'
     if python_license.exists():shutil.copy2(python_license,application_notices/'Python-LICENSE.txt')
+    download('https://code.qt.io/cgit/pyside/pyside-setup.git/plain/LICENSES/LGPL-3.0-only.txt?h=v6.8.3',application_notices/'PySide6-upstream-LGPL-3.0-only.txt')
+    download('https://code.qt.io/cgit/pyside/pyside-setup.git/plain/LICENSES/GPL-3.0-only.txt?h=v6.8.3',application_notices/'PySide6-upstream-GPL-3.0-only.txt')
+    textfile(application_notices/'NOTICE.txt',
+      'Qt for Python/PySide6 6.8.3: licence déclarée dans métadonnées des roues; textes LGPL/GPL pris à la source amont v6.8.3.\n'
+      'Les RECORD des roues PySide installées ne répertorient pas de notices licence; qtwebengine_licenses.html non trouvé dans ce bundle.\n'
+      'Ces textes amont ne remplacent pas toutes les notices Chromium/Qt tierces, ni les sources correspondantes et obligations de relinking.\n'
+      'Redistribution non approuvée; audit des notices tierces incomplet.\n')
     textfile(application_notices/'build-environment-declarations.json',json.dumps({'scope':'application_build_environment_not_final_frozen_app_file_inventory','declarations':main_declarations,'redistribution_approved':False},ensure_ascii=False,indent=2))
     textfile(sources/'application_runtime/README.txt',
       'Python source: https://www.python.org/downloads/source/\n'

@@ -2,6 +2,7 @@
 import hashlib
 import json
 import subprocess
+from .processes import run_external
 from pathlib import Path
 from .files import ROOT, digest, load, write, resource_path, env_python, worker_path, worker_environment, installed_package_path, runtime_root
 
@@ -19,7 +20,7 @@ def adtof(audio, out, piece_id, thresholds=None, synthetic=False):
     cache=ROOT/'work/cache'/key; cache.mkdir(parents=True,exist_ok=True)
     cmd=[str(env),str(worker),str(audio),str(cache/'activations.npy'),str(out),piece_id,json.dumps(thresholds),str(synthetic)]
     with (out/'inference.log').open('w') as log:
-        subprocess.run(cmd,env=worker_environment(),check=True,stdout=log,stderr=subprocess.STDOUT,timeout=3600)
+        run_external(cmd,env=worker_environment(),check=True,stdout=log,stderr=subprocess.STDOUT,timeout=3600)
     (out/'cache.json').write_text(json.dumps({'key':key,**identity},indent=2))
     return json.loads((out/'events.json').read_text())
 
@@ -36,7 +37,7 @@ def demucs(audio, out):
         cache.mkdir(parents=True,exist_ok=True)
         cmd=[str(env_python('demucs')),str(worker_path('demucs_worker.py')),str(audio),str(cache),str(weights)]
         with (out/'separation.log').open('w') as log:
-            subprocess.run(cmd,env=worker_environment(),check=True,stdout=log,stderr=subprocess.STDOUT,timeout=1800)
+            run_external(cmd,env=worker_environment(),check=True,stdout=log,stderr=subprocess.STDOUT,timeout=1800)
     import shutil
     shutil.copy2(cache/'drums.wav',out/'drums.wav')
     shutil.copy2(cache/'separation.json',out/'separation.json')
@@ -44,7 +45,7 @@ def demucs(audio, out):
     return out/'drums.wav'
 
 def allinone(audio, out):
-    subprocess.run([str(env_python('allinone')),str(worker_path('allinone_worker.py')),str(audio),str(out)],env=worker_environment(),check=True,timeout=3600)
+    run_external([str(env_python('allinone')),str(worker_path('allinone_worker.py')),str(audio),str(out)],env=worker_environment(),check=True,timeout=3600)
 
 def drumscript(audio, out, piece_id, full_song=False, synthetic=False):
     """DSP baseline, retaining unquantized onset seconds; separation uses our pinned cache."""
@@ -59,6 +60,6 @@ def drumscript(audio, out, piece_id, full_song=False, synthetic=False):
     cache=ROOT/'work/cache/drumscript'/key; cache.mkdir(parents=True,exist_ok=True)
     cmd=[str(env_python('drumscript')),str(worker),str(audio),str(cache),str(out),piece_id,str(synthetic)]
     with (out/'inference.log').open('w') as log:
-        subprocess.run(cmd,env=worker_environment(),check=True,stdout=log,stderr=subprocess.STDOUT,timeout=3600)
+        run_external(cmd,env=worker_environment(),check=True,stdout=log,stderr=subprocess.STDOUT,timeout=3600)
     write(out/'cache.json',{'key':key,**identity})
     return load(out/'events.json')

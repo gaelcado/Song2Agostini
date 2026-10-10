@@ -6,6 +6,8 @@ import subprocess
 import sys
 import time
 from pathlib import Path
+sys.path.insert(0, str(Path(os.environ.get('DRUM_LAB_RESOURCE_ROOT', Path(__file__).resolve().parents[1]))/'src'))
+from drum_lab.processes import run_external
 import numpy as np
 from scipy.signal.windows import hann
 
@@ -46,7 +48,7 @@ def main(audio, out, config_path):
     import soundfile as sf
     started = time.monotonic(); config = json.loads(config_path.read_text())
     out.mkdir(parents=True, exist_ok=True)
-    raw = subprocess.run([os.environ.get('DRUM_LAB_FFMPEG', 'ffmpeg'),'-v','error','-i',str(audio),'-f','f32le','-ar','44100','-ac','2','pipe:1'],check=True,capture_output=True).stdout
+    raw = run_external([os.environ.get('DRUM_LAB_FFMPEG', 'ffmpeg'),'-v','error','-i',str(audio),'-f','f32le','-ar','44100','-ac','2','pipe:1'],check=True,capture_output=True).stdout
     wave = np.frombuffer(raw, dtype='<f4').reshape(-1,2).copy()
     spectrum = spectral_analysis(wave); magnitude = np.abs(spectrum[:, :2048])
     options = ort.SessionOptions(); options.intra_op_num_threads = 4
