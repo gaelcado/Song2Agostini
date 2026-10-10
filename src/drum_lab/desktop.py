@@ -8,6 +8,18 @@ import sys
 import threading
 import traceback
 from pathlib import Path
+from urllib.parse import urlsplit
+
+
+def allowed_resource(address: str, server_port: int) -> bool:
+    """Allow the app origin and embedded viewer assets, never remote requests."""
+    url = urlsplit(address)
+    if url.scheme == "http":
+        return url.hostname == "127.0.0.1" and url.port == server_port
+    # Chromium’s PDF viewer imports its UI modules from this internal host.
+    if url.scheme == "chrome":
+        return url.netloc == "resources"
+    return url.scheme in {"data", "blob", "about", "qrc", "chrome-extension"}
 
 
 def main(argv=None):
@@ -45,10 +57,7 @@ def main(argv=None):
 
     class LocalOnly(QWebEngineUrlRequestInterceptor):
         def interceptRequest(self, info):
-            url = info.requestUrl()
-            allowed = (url.scheme() == "http" and url.host() == "127.0.0.1"
-                       and url.port() == server.server_port)
-            if not allowed and url.scheme() not in {"data", "blob", "about", "qrc", "chrome-extension"}:
+            if not allowed_resource(info.requestUrl().toString(), server.server_port):
                 info.block(True)
 
     profile = QWebEngineProfile(qt)  # in-memory cookies, no permanent user profile
