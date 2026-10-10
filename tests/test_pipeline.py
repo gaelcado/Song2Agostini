@@ -13,6 +13,7 @@ def test_reject_melodic_pitch_disguised_as_drum():
 
 def test_production_requires_no_reference_and_reports_failure(tmp_path,monkeypatch):
     import drum_lab.pipeline as module
+    monkeypatch.setattr(module,'runtime_identity',lambda name:{'environment':name,'synthetic_fixture':True})
     monkeypatch.setattr(module,'probe_audio',lambda audio: (_ for _ in ()).throw(ValueError('invalid')))
     with pytest.raises(ValueError):generate(tmp_path/'audio.mp3',tmp_path/'output')
     record=json.loads((tmp_path/'output/production.json').read_text())
@@ -188,3 +189,22 @@ def test_experimental_engines_do_not_change_defaults(tmp_path):
         generate(tmp_path/'a.wav',tmp_path/'out',{'grid_engine':'unknown'})
     with pytest.raises(ValueError,match='isolée'):
         generate(tmp_path/'a.wav',tmp_path/'out',{'engine':'adtof_kit','separate_drums':False})
+
+
+def test_missing_runtime_preserves_failed_production_record(tmp_path,monkeypatch):
+    import drum_lab.pipeline as module
+    output=tmp_path/'output'
+    def missing_runtime(name):
+        initial=json.loads((output/'production.json').read_text())
+        assert initial['status']=='running'
+        assert initial['reference_used'] is False
+        raise FileNotFoundError('ADTOF interpreter absent')
+    monkeypatch.setattr(module,'runtime_identity',missing_runtime)
+    monkeypatch.setattr(module,'probe_audio',lambda *a:pytest.fail('Audio must not be probed after missing runtime'))
+    with pytest.raises(FileNotFoundError,match='interpreter absent'):
+        generate(tmp_path/'audio.wav',output)
+    failed=json.loads((output/'production.json').read_text())
+    assert failed['status']=='failed'
+    assert failed['error']=={'type':'FileNotFoundError','message':'ADTOF interpreter absent'}
+    assert failed['duration_seconds']>=0
+    assert 'runtime_identity' not in failed and 'reference_sha256' not in failed

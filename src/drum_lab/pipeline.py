@@ -83,10 +83,10 @@ def generate(audio,out,config=None,piece_id='piece_01',title='Partition de batte
     started=time.monotonic();progress=progress or (lambda percent,label:None)
     record={'schema_version':1,'piece_id':piece_id,'title':title,'created_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),
             'status':'running','config':config,'synthetic':synthetic,'reference_used':False,
-            'runtime_identity':runtime_identity('adtof' if engine=='adtof_kit' else engine),
             'source_sha256':{str(p.relative_to(RESOURCE_ROOT)):digest(p) for folder in ('src','scripts') for p in (RESOURCE_ROOT/folder).rglob('*.py')}}
     write(out/'production.json',record)
     try:
+        record['runtime_identity'] = runtime_identity('adtof' if engine=='adtof_kit' else engine)
         progress(3,'Lecture et contrôle de l’audio')
         probe=probe_audio(audio);record['audio_sha256']=digest(audio);record['audio_duration_seconds']=float(probe['format']['duration'])
         source=audio
@@ -138,7 +138,8 @@ def generate(audio,out,config=None,piece_id='piece_01',title='Partition de batte
         record['artifact_sha256']={key:digest(path) for key,path in artifacts.items()}
         write(out/'production.json',record);progress(100,'Partition générée — brouillon à vérifier')
         return record
-    except Exception:
-        record.update(status='failed',duration_seconds=time.monotonic()-started)
+    except Exception as error:
+        record.update(status='failed',duration_seconds=time.monotonic()-started,
+                      error={'type':type(error).__name__, 'message':str(error)})
         write(out/'production.json',record)
         raise
