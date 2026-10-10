@@ -4,7 +4,20 @@ La sortie principale est le PDF, accompagné du MusicXML éditable, du MIDI brut
 intact et du MIDI quantifié distinct. Aucune feuille manuelle ne participe à
 l'estimation de grille, à la quantification ou à la gravure.
 
-## Grille audio et hypothèses
+## Inférence métrique actuelle
+
+Le produit recherche une signature dominante et des subdivisions binaires ou
+ternaires à partir de l’audio. Les choix, alternatives et abstentions sont
+décrits dans [meter-audio.md](meter-audio.md). La gravure produit de vraies
+mesures simples ou composées, avec une unité de tempo cohérente ; les changements
+locaux de signature ne sont pas encore exportés. Une candidate globale reste
+un brouillon, même lorsque son chiffre correspond à une feuille humaine.
+
+Les sections suivantes décrivent aussi les choix et contrôles historiques
+4/4. Leurs limitations et leurs chiffres ne doivent pas être attribués aux
+nouvelles sorties métriques.
+
+## Grille audio historique et hypothèses
 
 L'estimateur librosa utilise `trim=True`, puis retire les pulsations sans activité
 RMS locale. L'origine proposée est la première pulsation suivie audible, jamais

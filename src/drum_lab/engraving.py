@@ -78,7 +78,7 @@ def compact_segments(patterns, tempo_patterns=None):
     return segments
 
 
-def audit_musicxml(root, segments, slots, measures):
+def audit_musicxml(root, segments, slots, measures, bar_slots=16):
     """Read actual XML durations/instruments, expand repeats and compare events."""
     parsed=[]; errors=[]
     for measure in root.findall('./part/measure'):
@@ -95,7 +95,7 @@ def audit_musicxml(root, segments, slots, measures):
                 pitch=int(node.find('instrument').get('id')[1:])
                 if pitch not in KIT: errors.append('unknown percussion')
                 events.append((last,pitch))
-        if durations!={1:16,2:16}: errors.append('incomplete voice')
+        if durations!={1:bar_slots,2:bar_slots}: errors.append('incomplete voice')
         parsed.append(events)
     expanded=[]; index=0
     for start,length,count in segments:
@@ -110,7 +110,7 @@ def audit_musicxml(root, segments, slots, measures):
         for repetition in range(count):
             for offset, events in enumerate(block):
                 original=start+repetition*length+offset
-                expanded.extend((original*16+position,pitch) for position,pitch in events)
+                expanded.extend((original*bar_slots+position,pitch) for position,pitch in events)
     expected=sorted((slot,pitch) for slot,pitches in slots.items() for pitch in pitches)
     if sorted(expanded)!=expected: errors.append('expanded events differ')
     return {'valid':not errors,'errors':errors,'expanded_hits':len(expanded),
@@ -173,7 +173,7 @@ def kit_legend(pitches):
 
 
 
-def beam_voice_by_beat(measure, voice):
+def beam_voice_by_beat(measure, voice, group_slots=4):
     """Explicit beams on main chord notes, including intervening rests.
 
     Durations are already split at quarter boundaries. A quarter/rest breaks
@@ -187,7 +187,7 @@ def beam_voice_by_beat(measure, voice):
             continue
         duration = int(note.findtext('duration'))
         if duration < 4:
-            groups.setdefault(position // 4, []).append((note, duration))
+            groups.setdefault(position // group_slots, []).append((note, duration))
         position += duration
     for group in groups.values():
         if len(group) < 2 or not any(n.find('unpitched') is not None for n, _ in group):
@@ -216,8 +216,15 @@ def engrave(midi_path, grid, out, title='Batterie - transcription automatique', 
         raise ValueError('Grille de notation invalide')
     if not math.isfinite(duration) or duration < 0:
         raise ValueError('Durée invalide')
-    if grid.get('time_signature', '4/4') != '4/4' or grid.get('subdivision', 4) != 4:
-        raise ValueError('Export actuel : 4/4 et doubles croches seulement')
+    signature = grid.get('time_signature', '4/4')
+    if signature not in ('2/4','3/4','4/4','6/4','6/8','12/8'):
+        raise ValueError('Signature non prise en charge')
+    numerator, denominator = map(int, signature.split('/'))
+    bar_quarters = numerator * 4 / denominator
+    bar_slots = int(bar_quarters * 4)
+    compound = denominator == 8
+    group_slots = 6 if compound else 4
+    pulse_quarters = 1.5 if compound else 1.
     midi = pretty_midi.PrettyMIDI(str(midi_path))
     hits = [n for part in midi.instruments if part.is_drum for n in part.notes]
     if not hits:
@@ -225,6 +232,8 @@ def engrave(midi_path, grid, out, title='Batterie - transcription automatique', 
     if any(n.pitch not in KIT for n in hits):
         raise ValueError('Pitch de percussion non pris en charge')
     warnings = []
+    if grid.get('meter_evidence',{}).get('status')=='abstained':
+        warnings.append('Signature candidate ; regroupement incertain et changements locaux non représentés')
     if any(not p.is_drum and p.notes for p in midi.instruments):
         warnings.append('Pistes mélodiques ignorées : seule la batterie est gravée')
     beats = list(grid.get('beat_times_seconds', []))
@@ -241,7 +250,7 @@ def engrave(midi_path, grid, out, title='Batterie - transcription automatique', 
         kit.notes.append(pretty_midi.Note(hit.velocity, hit.pitch, start, start + .1))
     quant.instruments.append(kit); quant.write(str(out / 'quantized.mid'))
     total_slots = max(max(slots) + 1, math.ceil(to_beat(duration) * 4))
-    measures = max(1, math.ceil(total_slots / 16))
+    measures = max(1, math.ceil(total_slots / bar_slots))
     root = ET.Element('score-partwise', version='4.0')
     work = add(root, 'work'); add(work, 'work-title', title)
     identification = add(root, 'identification')
@@ -258,8 +267,8 @@ def engrave(midi_path, grid, out, title='Batterie - transcription automatique', 
         instr = add(score_part, 'score-instrument', id=ident); add(instr, 'instrument-name', KIT[pitch][0])
         mi = add(score_part, 'midi-instrument', id=ident); add(mi, 'midi-channel', 10); add(mi, 'midi-unpitched', pitch + 1)
     part = add(root, 'part', id='P1')
-    patterns = [tuple((i, tuple(sorted(slots.get(number*16+i, ())))) for i in range(16)) for number in range(measures)]
-    tempo_patterns = [tuple(round(60/(to_seconds(number*4+i+1)-to_seconds(number*4+i)),6) for i in range(4)) for number in range(measures)]
+    patterns = [tuple((i, tuple(sorted(slots.get(number*bar_slots+i, ())))) for i in range(bar_slots)) for number in range(measures)]
+    tempo_patterns = [tuple(round(60*pulse_quarters/(to_seconds(number*bar_quarters+(i+1)*pulse_quarters)-to_seconds(number*bar_quarters+i*pulse_quarters)),6) for i in range(int(bar_quarters/pulse_quarters))) for number in range(measures)]
     segments = compact_segments(patterns, tempo_patterns) if compact else [(i,1,1) for i in range(measures)]
     legend = kit_legend(hit.pitch for hit in hits)
     layout_breaks,page_sizes = presentation_layout(patterns,segments,legend_lines=len(legend))
@@ -280,10 +289,12 @@ def engrave(midi_path, grid, out, title='Batterie - transcription automatique', 
                 add(layout, 'top-system-distance', 100 + 30*(len(legend)+1))
         if number == 0:
             attrs = add(measure, 'attributes'); add(attrs, 'divisions', 4)
-            ts = add(attrs, 'time'); add(ts, 'beats', 4); add(ts, 'beat-type', 4)
+            ts = add(attrs, 'time'); add(ts, 'beats', numerator); add(ts, 'beat-type', denominator)
             clef = add(attrs, 'clef'); add(clef, 'sign', 'percussion')
             direction = add(measure, 'direction', placement='above'); dt = add(direction, 'direction-type')
-            add(dt, 'words', 'Brouillon - 4/4, doubles croches ; premiers temps à vérifier',
+            add(dt, 'words', (f'Brouillon - candidate {signature} ; regroupement des mesures incertain'
+                 if grid.get('meter_evidence',{}).get('status')=='abstained' else
+                 f'Brouillon - candidate {signature} ; premiers temps à vérifier'),
                 **{'default-y':str(60+30*len(legend)), 'font-size':'9'})
             for index,line in enumerate(legend):
                 direction=add(measure,'direction',placement='above')
@@ -291,7 +302,9 @@ def engrave(midi_path, grid, out, title='Batterie - transcription automatique', 
                 add(dt,'words',('Légende : ' if index==0 else '')+line,
                     **{'default-y':str(25+30*(len(legend)-index)), 'font-size':'9'})
             direction = add(measure, 'direction', placement='above'); dt = add(direction, 'direction-type')
-            mark = add(dt, 'metronome'); add(mark, 'beat-unit', 'quarter'); add(mark, 'per-minute', round(bpm, 2))
+            mark = add(dt, 'metronome'); add(mark, 'beat-unit', 'quarter')
+            if compound: add(mark, 'beat-unit-dot')
+            add(mark, 'per-minute', round(bpm/pulse_quarters, 2))
             add(direction, 'sound', tempo=round(bpm, 6))
         if compact and number == segment_start and block_length > 1 and not any(pitches for position,pitches in patterns[number]):
             attrs=measure.find('attributes')
@@ -301,20 +314,21 @@ def engrave(midi_path, grid, out, title='Batterie - transcription automatique', 
             direction=add(measure,'direction',**{'print-object':'no'})
             add(add(direction,'direction-type'),'words','')
             add(direction,'sound',tempo=local_bpm)
-            add(add(measure,'forward'),'duration',4)
-        add(add(measure,'backup'),'duration',16)
+            add(add(measure,'forward'),'duration',group_slots)
+        add(add(measure,'backup'),'duration',bar_slots)
         for voice in (1, 2):
-            if voice == 2: add(add(measure, 'backup'), 'duration', 16)
-            if not any(KIT[p][4]==voice for i in range(16) for p in slots.get(number*16+i,())):
-                n=add(measure,'note');add(n,'rest',measure='yes');add(n,'duration',16);add(n,'voice',voice)
+            if voice == 2: add(add(measure, 'backup'), 'duration', bar_slots)
+            if not any(KIT[p][4]==voice for i in range(bar_slots) for p in slots.get(number*bar_slots+i,())):
+                n=add(measure,'note');add(n,'rest',measure='yes');add(n,'duration',bar_slots);add(n,'voice',voice)
                 continue
             position = 0
-            while position < 16:
-                absolute = number * 16 + position
+            while position < bar_slots:
+                absolute = number * bar_slots + position
                 pitches = sorted(p for p in slots.get(absolute, ()) if KIT[p][4] == voice)
-                next_position = next((i for i in range(position + 1, 16)
-                    if any(KIT[p][4] == voice for p in slots.get(number * 16 + i, ()))), 16)
-                length = min(next_position - position, 4 - position % 4)
+                next_position = next((i for i in range(position + 1, bar_slots)
+                    if any(KIT[p][4] == voice for p in slots.get(number * bar_slots + i, ()))), bar_slots)
+                length = min(next_position - position, group_slots - position % group_slots)
+                if length == 5: length = 4
                 # Keep notation within each beat, preserving simultaneous hits as chords.
                 for index, pitch in enumerate(pitches or [None]):
                     n = add(measure, 'note')
@@ -327,18 +341,21 @@ def engrave(midi_path, grid, out, title='Batterie - transcription automatique', 
                     add(n, 'duration', length)
                     if pitch is not None: add(n, 'instrument', id=f'I{pitch}')
                     add(n, 'voice', voice)
-                    add(n, 'type', {1: '16th', 2: 'eighth', 3: 'eighth', 4: 'quarter'}[length])
-                    if length == 3: add(n, 'dot')
+                    add(n, 'type', {1: '16th', 2: 'eighth', 3: 'eighth', 4: 'quarter', 6: 'quarter'}[length])
+                    if length in (3, 6): add(n, 'dot')
                     if pitch is not None:
                         add(n, 'stem', 'up' if voice == 1 else 'down')
                         add(n, 'notehead', KIT[pitch][3])
                 position += length
         for voice in (1, 2):
-            beam_voice_by_beat(measure, voice)
+            beam_voice_by_beat(measure, voice, group_slots)
         if repeats > 1 and number == segment_start:
             add(add(measure, 'barline', location='left'), 'repeat', direction='forward')
             direction=add(measure,'direction',placement='above')
             add(add(direction,'direction-type'),'words', f'Jouer {repeats} fois', **{'default-x':'0', 'font-size':'9'})
+            # Added after both voices: place this text at the measure start,
+            # rather than beyond the final barline on a system's right edge.
+            add(direction, 'offset', -bar_slots)
         if repeats > 1 and number == segment_start + block_length - 1:
             add(add(measure, 'barline', location='right'), 'repeat', direction='backward', times=repeats)
         elif number == measures - 1:
@@ -347,11 +364,11 @@ def engrave(midi_path, grid, out, title='Batterie - transcription automatique', 
     xml_origin = to_seconds(0)
     quality['musicxml_audio_offset_seconds'] = xml_origin
     quality['musicxml_tempo_policy'] = 'tempo direction each quarter; exact tempo patterns required for repeats'
-    quality['musicxml_midi_max_relative_timing_error_ms'] = max(abs((to_seconds(slot/4)-xml_origin)-sum(60/t for bar in tempo_patterns[:slot//16] for t in bar)-sum(60/t for t in tempo_patterns[slot//16][:slot%16//4])-(slot%4)/4*60/tempo_patterns[slot//16][slot%16//4])*1000 for slot in slots)
+    quality['musicxml_midi_max_relative_timing_error_ms'] = max(abs((to_seconds(slot/4)-xml_origin)-sum(pulse_quarters*60/t for bar in tempo_patterns[:slot//bar_slots] for t in bar)-sum(pulse_quarters*60/t for t in tempo_patterns[slot//bar_slots][:slot%bar_slots//group_slots])-(slot%group_slots)/4*60/tempo_patterns[slot//bar_slots][slot%bar_slots//group_slots])*1000 for slot in slots)
     quality['musicxml_midi_max_absolute_timing_error_ms'] = abs(xml_origin)*1000+quality['musicxml_midi_max_relative_timing_error_ms']
     if abs(xml_origin)>1e-6:
         warnings.append('MusicXML relatif : appliquer musicxml_audio_offset_seconds pour aligner le MIDI audio')
-    audit = audit_musicxml(root, segments, slots, measures)
+    audit = audit_musicxml(root, segments, slots, measures, bar_slots)
     if not audit['valid']: raise ValueError('Audit MusicXML échoué : ' + str(audit))
     ET.indent(root)
     xml_path = out / 'score.musicxml'
@@ -382,7 +399,7 @@ def engrave(midi_path, grid, out, title='Batterie - transcription automatique', 
               'outputs_sha256':{name:hashlib.sha256((out/name).read_bytes()).hexdigest() for name in ('quantized.mid','score.musicxml','score.pdf')},
               'files': ['quantized.mid', 'score.musicxml', 'score.pdf'],
               'outputs': {name:str((out/name).resolve()) for name in ('quantized.mid','score.musicxml','score.pdf')},
-              'limitations': ['4/4 assumption', 'tempo octave assumption', '16th-note grid', 'downbeat not verified', 'no swing/triplet inference'],
+              'limitations': ['global meter hypothesis; local changes not represented', 'tempo octave ambiguity', 'binary/ternary evidence uncalibrated', 'downbeat not verified', 'no swing inference'],
               'reference_used': False}
     (out / 'notation.json').write_text(json.dumps(record, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
     return record

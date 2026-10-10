@@ -13,6 +13,7 @@ from . import adapters
 from .engraving import engrave, estimate_grid, KIT
 from .files import ROOT, digest, load, write, resource_path, RESOURCE_ROOT, find_tool, runtime_identity
 from .grid import clean_model_grid
+from .meter import infer_audio_meter
 
 DEFAULT_CONFIG={'separate_drums':True,'compact':True,'thresholds':[.22,.24,.32,.22,.30]}
 
@@ -111,6 +112,9 @@ def generate(audio,out,config=None,piece_id='piece_01',title='Partition de batte
             grid=cached_model_grid(audio,ROOT/config['grid_cache'],out/'grid.json')
         else:
             grid=estimate_grid(audio,out/'grid.json',engine=grid_engine)
+        grid=infer_audio_meter(audio,grid)
+        write(out/'grid.json',grid)
+        record['meter_policy']=grid.get('meter_evidence',{})
         record['grid_engine']=grid_engine
         record['grid_sha256']=digest(out/'grid.json')
         if grid_engine=='beat_this':
@@ -128,8 +132,9 @@ def generate(audio,out,config=None,piece_id='piece_01',title='Partition de batte
                          'La fidélité musicale n’est pas validée automatiquement face à une référence humaine.'])
         if grid_engine=='beat_this':
             warnings.append('Premiers temps prédits par un modèle audio expérimental ; brouillon non validé.')
-            if not grid.get('phase_evidence',{}).get('local_downbeats_agree_with_fixed_four_beats'):
-                warnings.append('Les premiers temps audio ne concordent pas tous avec la signature 4/4 ; placement par mesure non validé.')
+            if grid.get('meter_evidence',{}).get('status')=='abstained':
+                warnings.append('Regroupement des mesures incertain : candidate dominante ; changements locaux non représentés.')
+            warnings.append('La confiance métrique est un diagnostic non calibré ; les alternatives de tempo restent ouvertes.')
         if config['separate_drums']:
             warnings.append('La séparation de batterie peut conserver des artefacts ou omettre certains coups.')
         artifacts={'pdf':str(out/'score.pdf'),'musicxml':str(out/'score.musicxml'),'midi':str(out/'quantized.mid'),'raw_midi':str(out/'raw.mid')}

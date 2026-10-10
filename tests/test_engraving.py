@@ -118,6 +118,9 @@ def test_legend_and_short_repeat_do_not_add_events(tmp_path,monkeypatch):
     assert any('Légende' in w for w in words)
     assert any('croix (x)' in w for w in words)
     assert any(w=='Jouer 4 fois' for w in words)
+    repeat_direction=next(d for d in xml.findall('.//direction')
+                          if d.findtext('direction-type/words')=='Jouer 4 fois')
+    assert repeat_direction.findtext('offset')=='-16'
     assert not any(w.startswith('Mesures ') for w in words)
     assert result['musicxml_audit']['valid']
     assert result['musicxml_audit']['expanded_hits']==20

@@ -18,7 +18,10 @@ def quantize_hits(hits, grid):
         interval = float(np.median(np.diff(beats)))
         gaps = np.diff(beats)
         # Sparse tracking during silence leaves missing quarter beats, not a long slow beat.
-        increments = np.where(gaps > 1.8*interval, np.maximum(1, np.rint(gaps/interval)), 1)
+        increments = (np.ones(len(gaps)) if grid.get('meter_evidence') else
+                      np.where(gaps > 1.8*interval, np.maximum(1, np.rint(gaps/interval)), 1))
+        pulse_length = float(grid.get('pulse_quarter_length', 1.))
+        increments = increments * pulse_length
         coordinates = np.concatenate(([0.], np.cumsum(increments)))
         # A boundary gap may itself contain missing beats. Extrapolate one
         # quarter beat, not the whole observed gap; use the local edge tempo.
@@ -42,11 +45,15 @@ def quantize_hits(hits, grid):
         def to_seconds(b): return origin+b*60/bpm
     # Include pickup material without changing beat phase: prepend complete bars.
     first = min(to_beat(n.start) for n in hits)
-    prepend = max(0, math.ceil(-round(first*4)/16))
+    numerator, denominator = map(int, grid.get('time_signature', '4/4').split('/'))
+    bar_quarters = numerator * 4 / denominator
+    # A dotted pulse spans six sixteenth slots; never discard its inner offbeats.
+    step = 1
+    prepend = max(0, math.ceil(-round(first*4/step)*step/(bar_quarters*4)))
     mapped=[]
     for n in hits:
-        slot=round((to_beat(n.start)+prepend*4)*4)
-        start=to_seconds(slot/4-prepend*4)
+        slot=round((to_beat(n.start)+prepend*bar_quarters)*4/step)*step
+        start=to_seconds(slot/4-prepend*bar_quarters)
         # An onset extremely close to audio zero can round before the audio domain.
         start=max(0., start)
         mapped.append((n, slot, start))
@@ -55,6 +62,7 @@ def quantize_hits(hits, grid):
     quality={'median_shift_ms':float(np.median(shifts)*1000),
              'max_shift_ms':float(np.max(shifts)*1000),
              'large_shift_threshold_ms':50, 'large_shift_count':int((shifts>.05).sum()),
+             'tracked_gap_policy':'observed pulses without global missing-beat repair' if grid.get('meter_evidence') else 'global median missing-beat repair',
              'collision_count':len(pairs)-len(set(pairs)), 'pickup_prepend_measures':prepend,
              'extrapolation_policy':'edge interval, tracked beats only; no fabricated beat at audio zero'}
-    return mapped, lambda t: to_beat(t)+prepend*4, lambda b: to_seconds(b-prepend*4), quality
+    return mapped, lambda t: to_beat(t)+prepend*bar_quarters, lambda b: to_seconds(b-prepend*bar_quarters), quality
