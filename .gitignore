@@ -7,9 +7,13 @@ data/reference/*
 !data/reference/.gitkeep
 data/manifest.json
 data/research-manifest.json
+data/new-input-research-manifest.json
+data/new-input-validation-manifest.json
 data/benchmark*manifest.json
 musique/
 musique IA/
+/*.mp3
+/*.MP3
 *.egg-info/
 __pycache__/
 .pytest_cache/

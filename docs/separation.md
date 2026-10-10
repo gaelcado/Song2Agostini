@@ -77,3 +77,21 @@ Les confirmations partielles ne modifient aucune prédiction et ne promeuvent
 jamais seules une référence au statut de vérité validée. Les projections
 lisibles des MIDI sources restent distinctes des originaux et des sorties.
 Le périmètre actuel est fixé dans `docs/handoff-produit-et-simplification.md`.
+
+## Imports locaux appariés
+
+Les nouveaux cas `user_01` à `user_10` conservent les originaux sous
+`data/raw/audio/LOT/` et `data/raw/scores/LOT/`. Le manifeste audio seul
+`data/new-input-research-manifest.json` fournit identifiant, titre d'affichage,
+chemin, empreinte et provenance. Les associations audio/partition, couverture,
+statut humain et alignement appartiennent exclusivement à
+`data/new-input-validation-manifest.json` et aux rapports de
+`work/verification/LOT/`. Aucun de ces fichiers privés n'est versionné.
+
+Une erreur de fichier source peut être corrigée explicitement : conserver
+l'ancien original et son run, vérifier l'empreinte du remplacement, actualiser
+les projections séparées, puis lancer uniquement le cas corrigé avec le même
+profil. Ce remplacement ne constitue pas un réglage sur la référence.
+Les manifestes utilisés par chaque passe et les commandes restent figés dans
+son dossier sous `work/`. Les sorties courantes pointent vers les runs retenus ;
+les échecs et exports remplacés restent inspectables dans l'historique.

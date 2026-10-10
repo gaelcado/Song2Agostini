@@ -7,7 +7,7 @@ import time
 import uuid
 from pathlib import Path
 from .files import ROOT, load, write, digest
-from .pieces import registered_audio, BENCHMARK_IDS, PERCUSSION_IDS
+from .pieces import registered_audio, BENCHMARK_IDS, PERCUSSION_IDS, USER_IDS
 
 def run(audio, configs, piece, synthetic=False):
     if not 1<=len(configs)<=13: raise ValueError('Une baseline et au plus 12 variantes')
@@ -19,7 +19,7 @@ def run(audio, configs, piece, synthetic=False):
         if any(load(p).get('piece_id')=='piece_02' for p in (ROOT/'work/runs').glob('*/record.json')):
             raise ValueError('Contrôle déjà consulté : poursuivre uniquement en développement documenté')
     existing=[load(p) for p in (ROOT/'work/runs').glob('*/record.json')]
-    if piece in ('piece_01',)+BENCHMARK_IDS+PERCUSSION_IDS and not synthetic and sum(r.get('piece_id')==piece and not r.get('synthetic',False) for r in existing)+len(configs)>13:
+    if piece in ('piece_01',)+BENCHMARK_IDS+PERCUSSION_IDS+USER_IDS and not synthetic and sum(r.get('piece_id')==piece and not r.get('synthetic',False) for r in existing)+len(configs)>13:
         raise ValueError('Budget total atteint : baseline et 12 variantes de développement')
     records=[]
     for config in configs:

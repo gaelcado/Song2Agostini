@@ -7,7 +7,7 @@ def audio_title(audio, filename=None):
     fallback = Path(filename or audio).stem.strip()[:120] or 'Partition de batterie'
     fingerprint = digest(audio)
     for name in ('research-manifest.json', 'benchmark-research-manifest.json',
-                 'benchmark-percussion-research-manifest.json'):
+                 'benchmark-percussion-research-manifest.json', 'new-input-research-manifest.json'):
         manifest = ROOT / 'data' / name
         if not manifest.is_file():
             continue
