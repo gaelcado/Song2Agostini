@@ -21,6 +21,8 @@ Sous Windows utiliser `.venv\Scripts\python.exe`. Omettre `--dmg`. L’exécutab
 
 Les trois environnements d’inférence sont figés séparément : ADTOF, Demucs et Beat This!. Le lanceur principal n’importe pas leurs versions de Torch dans son processus Qt. Chaque worker comprend son interpréteur Python, ses bibliothèques et les données de packages ; le dispatcher accepte les scripts conservés dans les ressources et les interrogations `-c` des adaptateurs.
 
+Le builder fige d’abord la fenêtre Qt, puis copie le runtime intact dans le bundle. Il conserve les noms, liens relatifs et bibliothèques privés des workers et de MuseScore. L’analyse PyInstaller du runtime complet mélangeait les arbres Qt et échouait sur une ressource du bundle MuseScore ; la copie après construction évite ce problème. La DMG utilise des liens physiques temporaires quand le système les autorise et une copie normale sinon.
+
 ```sh
 .venv/bin/python packaging/freeze_workers.py --output work/desktop-runtime/workers
 ```

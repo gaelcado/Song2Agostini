@@ -8,7 +8,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 ENGINES = {"adtof": ["adtof_pytorch", "torch", "librosa", "pretty_midi"],
-           "demucs": ["demucs", "torch", "torchaudio", "soundfile", "einops"],
+           "demucs": ["demucs", "torch", "torchaudio", "soundfile", "einops", "numpy"],
            "beat_this": ["beat_this", "torch", "torchaudio", "librosa", "einops"]}
 
 
@@ -33,6 +33,10 @@ def main(argv=None):
                    "--exclude-module", "PySide6", "--exclude-module", "PyQt5", "--exclude-module", "tensorflow"]
         for package in [*ENGINES[engine], "backports.tarfile"]:
             command.extend(["--collect-all", package])
+        if engine == "demucs":
+            # Official old checkpoints pickle NumPy 1 module names, including under NumPy 2.
+            command.extend(["--hidden-import", "numpy.core.multiarray",
+                            "--hidden-import", "numpy.core._multiarray_umath"])
         command.append(str(ROOT / "packaging" / "worker_entry.py"))
         subprocess.run(command, cwd=ROOT, check=True)
         executable = args.output / engine / (engine + (".exe" if sys.platform == "win32" else ""))
