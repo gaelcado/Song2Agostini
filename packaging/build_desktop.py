@@ -14,6 +14,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def link_or_copy(source, destination):
+    try:
+        os.link(source, destination)
+    except OSError:
+        shutil.copy2(source, destination)
+    return destination
+
+
 def verify_payload(path):
     """No relocated venv may be advertised as a standalone distribution."""
     manifest = json.loads((path / "distribution-manifest.json").read_text())
@@ -101,7 +109,7 @@ def main(argv=None):
         stage.mkdir()
         # Same filesystem: hard links avoid a third full copy of heavy runtimes.
         shutil.copytree(ROOT / "dist" / f"{name}.app", stage / f"{name}.app",
-                        symlinks=True, copy_function=os.link)
+                        symlinks=True, copy_function=link_or_copy)
         (stage / "Applications").symlink_to("/Applications")
         shutil.copy2(ROOT / "dist" / f"{name}-build.json", stage)
         explanation = ("Aperçu de l’interface : moteurs et modèles NON embarqués.\n"

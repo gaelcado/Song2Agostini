@@ -1,6 +1,12 @@
 name: Full CPU runtime smoke
 on:
   workflow_dispatch:
+    inputs:
+      platform:
+        description: OS to test
+        type: choice
+        default: both
+        options: [both, windows, linux]
 permissions:
   contents: read
 jobs:
@@ -8,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, windows-2022]
+        os: ${{ fromJSON(inputs.platform == 'windows' && '["windows-2022"]' || inputs.platform == 'linux' && '["ubuntu-22.04"]' || '["ubuntu-22.04", "windows-2022"]') }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     defaults:
@@ -29,8 +35,30 @@ jobs:
       - name: Select isolated app interpreter
         run: |
           python -c "import os; from pathlib import Path; p=Path('work/full-ci/envs/app') / ('Scripts/python.exe' if os.name=='nt' else 'bin/python'); open(os.environ['GITHUB_ENV'], 'a').write('APP_PYTHON='+p.absolute().as_posix()+'\n')"
+      - name: Install verified ephemeral Windows FFmpeg for Demucs
+        if: runner.os == 'Windows'
+        run: |
+          "$APP_PYTHON" -m pip install --no-deps 'https://files.pythonhosted.org/packages/2c/c6/fa760e12a2483469e2bf5058c5faff664acf66cadb4df2ad6205b016a73d/imageio_ffmpeg-0.6.0-py3-none-win_amd64.whl#sha256=02fa47c83703c37df6bfe4896aab339013f62bf02c5ebf2dce6da56af04ffc0a'
+          "$APP_PYTHON" -c "import os,imageio_ffmpeg; open(os.environ['GITHUB_ENV'],'a').write('DRUM_LAB_FFMPEG='+imageio_ffmpeg.get_ffmpeg_exe()+'\n'); print('FFmpeg version',imageio_ffmpeg.get_ffmpeg_version())"
+      - name: Extract verified official Windows MuseScore MSI
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $installer = Join-Path $env:RUNNER_TEMP 'MuseScore-Studio-4.7.5.msi'
+          $tools = Join-Path $env:RUNNER_TEMP 'musescore-ci'
+          Invoke-WebRequest -Uri 'https://github.com/musescore/MuseScore/releases/download/v4.7.5/MuseScore-Studio-4.7.5.260831071-x86_64.msi' -OutFile $installer
+          $expected = '07b0f3292612e2df4c7e0632deb790add51b218f0ee33f7fecaa6111dd279ec6'
+          if ((Get-FileHash $installer -Algorithm SHA256).Hash.ToLower() -ne $expected) { throw 'MuseScore MSI SHA256 mismatch' }
+          $process = Start-Process msiexec.exe -ArgumentList '/a', $installer, '/qn', "TARGETDIR=$tools" -Wait -PassThru
+          if ($process.ExitCode -ne 0) { throw "MuseScore extraction exit $($process.ExitCode)" }
+          $renderer = Get-ChildItem $tools -Recurse -Filter 'MuseScore4.exe' | Select-Object -First 1
+          if (-not $renderer) { throw 'MuseScore4.exe missing in extracted MSI' }
+          "DRUM_LAB_MUSESCORE=$($renderer.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
       - name: Generate artificial audio and test exports
         run: '"$APP_PYTHON" scripts/platform_smoke.py'
+      - name: Native Windows PDF export required
+        if: runner.os == 'Windows'
+        run: '"$APP_PYTHON" scripts/platform_smoke.py --out work/platform-pdf --require-pdf'
       - name: Real CPU forwards on artificial audio
         run: '"$APP_PYTHON" scripts/model_smoke.py --runtime-root work/full-ci --audio work/platform-smoke/synthetic.wav'
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -41,6 +69,7 @@ jobs:
             work/full-ci/bootstrap.log
             work/full-ci/runtime-install.json
             work/platform-smoke/
+            work/platform-pdf/
             work/model-smoke/
           if-no-files-found: warn
           retention-days: 14
