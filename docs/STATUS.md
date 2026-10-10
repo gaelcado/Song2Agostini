@@ -1,3 +1,9 @@
+## Application reconstruite et lancée — 10 octobre 2026
+
+Bundle natif macOS Apple Silicon reconstruit depuis `cfdb979` avec le runtime local complet : `dist/Song2Agostini.app`. Commande : `.venv/bin/python packaging/build_desktop.py --runtime-payload work/desktop-runtime`. Signature vérifiée avec `codesign --verify --deep --strict` ; JavaScript embarqué identique aux sources.
+
+Test réel du binaire figé depuis `/tmp`, PATH système, variables Python/runtime héritées retirées et répertoire de travail applicatif neuf : génération audio seule de `piece_01.mp3` réussie en 107,71 s. PDF, MusicXML, MIDI brut et MIDI quantifié présents, empreintes vérifiées. Preuves privées : `work/desktop-smoke/pdf-first-cfdb979/desktop-smoke.json`, capture de fenêtre et logs ; métadonnées dans `dist/Song2Agostini-build.json`. Lancement normal effectué avec `open -n` sur ce bundle. Cette vérification porte sur le fonctionnement macOS, pas sur la fidélité musicale. L’ancienne image DMG n’a pas été reconstruite ; utiliser le bundle `.app` indiqué.
+
 ## Écran final centré sur le PDF — 10 octobre 2026
 
 Le résultat affiche le PDF complet dans un lecteur intégré avec navigation multipage, puis conserve les formats supplémentaires et diagnostics dans des volets repliés. Deux actions principales : téléchargement PDF et ouverture du MusicXML éditable dans MuseScore. Le lancement préfère MuseScore 4, puis 3 selon les installations locales ; message explicite et téléchargement MusicXML en repli si aucun éditeur n’est trouvé.
