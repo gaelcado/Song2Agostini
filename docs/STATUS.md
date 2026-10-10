@@ -1,3 +1,15 @@
+## Transitoires et ambiguïtés charleston/cymbale — 10 octobre 2026
+
+Nouvelle passe bornée : une variante T1 sur les cinq nouveaux audios, sans hausse du plafond d’essais. Diagnostic exploratoire user_01 puis même règle sur les autres cas ; tous ont déjà été consultés et restent du développement. Chronologie et critères figés avant génération dans `work/research/transient-attacks-20261010/preregistration.json`. La vérification utilise un protocole distinct, fixé avant réception des candidates, sur le mix original.
+
+Le filtre optionnel conserve la baseline et examine les propositions du seuil charleston 0,16. Il exige un transitoire aigu distinct, s’abstient près d’une cymbale prédite et interdit de réutiliser un pic déjà attribué. Aucune complétion périodique, aucune reclassification. Les fichiers `detector-raw.mid` et `detector-events.json` sont préservés avec empreintes avant les ajouts. Source commise `53ceb8e`, détails `docs/transient-candidates.md`.
+
+T1 retient 48 ajouts (3/17/15/6/7), contre 191 pour la baisse de seuil seule. Zéro retrait, autres classes inchangées ; copies du détecteur byte-identiques aux baselines sur les cinq cas. Contrôle indépendant du mix : 29/48 ajouts passent le seuil énergétique exploratoire préfixé de +6 dB, contre 1/46 instants décalés utilisés comme témoins descriptifs, non comme négatifs annotés. Résultats par cas : 3/3, 12/17, 11/15, 0/6, 3/7. Une hausse d’énergie peut venir d’un autre instrument ; ce résultat n’est ni une précision instrumentale ni une preuve de gain de fidélité. Les six ajouts de Toxicity ne sont pas corroborés par ce critère indépendant.
+
+Cinq intégrités passées, 27 pages inspectées lisibles, erreur XML/MIDI maximale 1,274 ms. Les baselines courantes restent retenues, paramètres expérimentaux désactivés par défaut. Dix paires de caisse claire à 60–80 ms restent ambiguës ; six présentent deux transitoires distincts dans le diagnostic recherche, sans démontrer un fla plutôt qu’un autre geste. Aucun symbole de fla ajouté.
+
+233 tests passent en 6,74 s ; génération des cinq runs 26,5 s et diagnostic 5,6 s, sans nouvelle inférence des modèles. Budget cumulé : user_01 8/13, autres 7/13. Arrêt après la variante prévue. Preuves privées : `work/research/transient-attacks-20261010/` et `work/verification/attaques-v2-20261010/`. Comparaison PDF/XML et six courts extraits pour écoute sont conservés dans ces dossiers. F1/complétude musicale restent N/A ; prochaine étape utile : confirmation instrumentale indépendante des candidats avant réglage ou adoption.
+
 ## Charlestons et triolets locaux — 10 octobre 2026
 
 Boucle de développement bornée, audio seul, trois variantes sur chacun des cinq nouveaux audios : seuil charleston .22→.16 (canal 3 de LABELS_5), sélection de triolets locaux en mesure simple, puis combinaison. Pré-enregistrement, sources, commandes et quinze runs conservés sous `work/research/hats-tuplets-20261010/`. Activations et grille mises en cache, aucune nouvelle inférence des modèles ; 47,7 secondes cumulées de génération. Les cinq cas ont servi au développement, pas à un test indépendant.
