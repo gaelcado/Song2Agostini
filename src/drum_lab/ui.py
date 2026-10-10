@@ -346,6 +346,29 @@ class Handler(BaseHTTPRequestHandler):
             self._json(403, {"error": "Session invalide. Rechargez la page."})
             return
         parsed = urlsplit(self.path)
+        parts = parsed.path.strip("/").split("/")
+        if len(parts) == 4 and parts[:2] == ["api", "jobs"] and parts[3] == "open-musescore":
+            with self.server.app.lock:
+                job = self.server.app.jobs.get(parts[2])
+                if not job or job["session"] != session:
+                    self._json(404, {"error": "Traitement introuvable."})
+                    return
+                score = job["artifacts"].get("musicxml")
+                if (job["status"] != "completed" or score is None or not score.is_file()
+                        or not score.resolve().is_relative_to(job["output"].resolve())):
+                    self._json(409, {"error": "Partition éditable indisponible."})
+                    return
+            try:
+                from .editor import open_score
+                open_score(score)
+            except FileNotFoundError as error:
+                self._json(503, {"error": str(error)})
+                return
+            except (OSError, subprocess.SubprocessError):
+                self._json(503, {"error": "Impossible de lancer MuseScore. Téléchargez le MusicXML pour l’ouvrir manuellement."})
+                return
+            self._json(200, {"status": "launch_requested"})
+            return
         if parsed.path != "/api/jobs":
             self._json(404, {"error": "Ressource introuvable."})
             return

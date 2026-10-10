@@ -24,19 +24,28 @@
   </section>
 
   <section id="pane-done" class="pane-done" aria-labelledby="output-title">
-    <figure class="sheet">
-      <img id="pdf-preview" alt="Première page de la partition de batterie">
-      <p id="preview-unavailable" class="muted" hidden>L’aperçu est indisponible. Ouvrez ou téléchargez le PDF complet.</p>
-      <figcaption><span>Première page</span><a id="open-pdf" target="_blank" rel="noopener">Ouvrir le PDF complet ↗</a></figcaption>
-    </figure>
-    <aside class="side">
+    <header class="result-header">
+      <div><h1 id="output-title">Votre partition</h1><span id="draft-badge" class="badge">Brouillon à vérifier à l’écoute</span></div>
       <button id="again" class="back" type="button">← Nouvelle partition</button>
-      <header><h1 id="output-title">Votre partition</h1><span id="draft-badge" class="badge" title="La fidélité musicale n’est pas validée automatiquement : écoutez en suivant la partition.">Brouillon</span></header>
-      <div class="downloads" id="downloads"></div>
+    </header>
+    <div class="result-actions">
+      <a id="download-pdf" class="action primary" download>Télécharger le PDF</a>
+      <button id="open-musescore" class="action" type="button">Ouvrir dans MuseScore</button>
+    </div>
+    <p id="editor-status" class="muted" role="status" hidden></p>
+    <figure class="sheet">
+      <iframe id="pdf-preview" title="Partition PDF complète" src="about:blank"></iframe>
+      <figcaption><span>Partition complète</span><a id="open-pdf" target="_blank" rel="noopener">Ouvrir le PDF dans une fenêtre ↗</a></figcaption>
+    </figure>
+    <p class="muted editor-hint">MuseScore 3 ou 4 ouvre la version éditable de la partition.</p>
+    <details class="block"><summary>Autres formats</summary><div class="downloads" id="downloads"></div></details>
+    <details class="block result-details"><summary>Détails du traitement</summary>
+    <div class="side">
       <section class="block" aria-labelledby="facts-title"><h2 id="facts-title">Ce que l’application a compris</h2><dl id="facts" class="facts"></dl></section>
       <details id="warnings" class="block" open><summary id="warnings-title">À vérifier à l’écoute</summary><ul id="warning-list"></ul></details>
       <details class="block"><summary>Comment c’est fait</summary><ol id="recap" class="steps recap"></ol><p id="compute-note" class="muted"></p></details>
-    </aside>
+    </div>
+    </details>
   </section>
 
   <p id="error" class="error" role="alert" hidden></p>

@@ -293,3 +293,38 @@ def test_product_assets_have_no_review_navigation_or_api(local_server):
         assert status == 200
         assert b"/verification" not in body
         assert b"Validation humaine" not in body
+
+
+def test_open_musescore_requires_owned_completed_job_and_csrf(local_server, monkeypatch, tmp_path):
+    from drum_lab import editor
+    launches = []
+    monkeypatch.setattr(editor, 'open_score', lambda path: launches.append(path))
+    server, app = local_server()
+    auth = session(server)
+    job = upload(server, auth)
+    completed(server, auth, job)
+    route = f'/api/jobs/{job}/open-musescore'
+    assert request(server, 'GET', route, headers=auth)[0] == 404
+    assert request(server, 'POST', route, headers={'Cookie': auth['Cookie']})[0] == 403
+    assert request(server, 'POST', route, headers=session(server))[0] == 404
+    assert launches == []
+    assert request(server, 'POST', route, headers=auth)[0] == 200
+    assert launches == [app.jobs[job]['artifacts']['musicxml']]
+    app.jobs[job]['status'] = 'running'
+    assert request(server, 'POST', route, headers=auth)[0] == 409
+    app.jobs[job]['status'] = 'completed'
+    escaped = tmp_path/'outside.musicxml'; escaped.write_text('outside')
+    app.jobs[job]['artifacts']['musicxml'] = escaped
+    assert request(server, 'POST', route, headers=auth)[0] == 409
+    assert len(launches) == 1
+
+
+def test_missing_editor_returns_actionable_error(local_server, monkeypatch):
+    from drum_lab import editor
+    def missing(path):
+        raise FileNotFoundError('MuseScore 3 ou 4 introuvable. Téléchargez le MusicXML.')
+    monkeypatch.setattr(editor, 'open_score', missing)
+    server, app = local_server(); auth = session(server); job = upload(server, auth)
+    completed(server, auth, job)
+    status, _, body = request(server, 'POST', f'/api/jobs/{job}/open-musescore', headers=auth)
+    assert status == 503 and 'MusicXML' in json.loads(body)['error']

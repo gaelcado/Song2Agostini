@@ -1,3 +1,9 @@
+## Écran final centré sur le PDF — 10 octobre 2026
+
+Le résultat affiche le PDF complet dans un lecteur intégré avec navigation multipage, puis conserve les formats supplémentaires et diagnostics dans des volets repliés. Deux actions principales : téléchargement PDF et ouverture du MusicXML éditable dans MuseScore. Le lancement préfère MuseScore 4, puis 3 selon les installations locales ; message explicite et téléchargement MusicXML en repli si aucun éditeur n’est trouvé.
+
+L’action d’ouverture est un POST local authentifié, réservé au traitement terminé de la session et à son fichier MusicXML interne ; aucun chemin fourni par le navigateur ni commande shell. Tests des accès intersessions, CSRF, fichier hors résultat et éditeur absent. Détection macOS/Windows/Linux testée de façon simulée ; ouverture réelle de MuseScore 4 réussie sur ce Mac. Le lecteur PDF a été contrôlé visuellement dans Qt WebEngine avec une sortie synthétique. 238 tests réussis en 8,08 s. Preuves locales : `work/ui-pdf-first/`. Les binaires distribués antérieurs ne sont pas reconstruits par cette modification des sources.
+
 ## Transitoires et ambiguïtés charleston/cymbale — 10 octobre 2026
 
 Nouvelle passe bornée : une variante T1 sur les cinq nouveaux audios, sans hausse du plafond d’essais. Diagnostic exploratoire user_01 puis même règle sur les autres cas ; tous ont déjà été consultés et restent du développement. Chronologie et critères figés avant génération dans `work/research/transient-attacks-20261010/preregistration.json`. La vérification utilise un protocole distinct, fixé avant réception des candidates, sur le mix original.

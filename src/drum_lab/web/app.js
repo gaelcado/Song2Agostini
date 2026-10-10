@@ -177,7 +177,7 @@ function renderResult(data) {
   const downloads = byId('downloads');
   downloads.replaceChildren();
   for (const kind of Object.keys(FILES)) {
-    if (!data.artifacts[kind]) continue;
+    if (kind === 'pdf' || !data.artifacts[kind]) continue;
     const link = document.createElement('a');
     link.href = data.artifacts[kind] + '?download=1';
     link.setAttribute('download', '');
@@ -188,9 +188,10 @@ function renderResult(data) {
     downloads.append(link);
   }
   byId('open-pdf').href = data.artifacts.pdf;
-  byId('pdf-preview').hidden = false;
-  byId('preview-unavailable').hidden = true;
-  byId('pdf-preview').src = data.preview;
+  byId('download-pdf').href = data.artifacts.pdf + '?download=1';
+  byId('pdf-preview').src = data.artifacts.pdf + '#view=FitH';
+  byId('editor-status').hidden = true;
+  byId('open-musescore').disabled = false;
   renderFacts(data.details);
   const warnings = ['Grille issue de l’audio : brouillon à vérifier à l’écoute.', ...data.warnings];
   const list = byId('warning-list');
@@ -208,9 +209,24 @@ function renderResult(data) {
     : 'Tout a été calculé sur cet ordinateur.';
   setView('done');
 }
-byId('pdf-preview').addEventListener('error', () => {
-  byId('pdf-preview').hidden = true;
-  byId('preview-unavailable').hidden = false;
+byId('open-musescore').addEventListener('click', async () => {
+  const button = byId('open-musescore');
+  const status = byId('editor-status');
+  button.disabled = true;
+  status.hidden = false;
+  status.textContent = 'Ouverture dans MuseScore…';
+  try {
+    const response = await fetch(`/api/jobs/${currentJob}/open-musescore`, {
+      method: 'POST', headers: {'X-Session-Token': token},
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Ouverture impossible.');
+    status.textContent = 'La partition a été transmise à MuseScore.';
+  } catch (error) {
+    status.textContent = error.message || 'Impossible de joindre l’application locale.';
+  } finally {
+    button.disabled = false;
+  }
 });
 
 function setTitle(title) {
