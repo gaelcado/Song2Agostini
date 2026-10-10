@@ -8,7 +8,7 @@ l'installation sur toutes les éditions du système.
 | --- | --- | --- |
 | macOS Apple Silicon | Source locale Python 3.11.14, MIDI/XML/PDF ; runner macOS 14 Python 3.11.9, 185 tests et smoke installée réussis | PDF runner N/A (MuseScore absent), renderer local parfois SIGABRT |
 | Linux Ubuntu 22.04 | Python 3.11.17, 185 tests réussis et vrais exports MIDI/XML/PDF CI | MuseScore 3 : correction de l’option `--no-audio` validée |
-| Windows Server 2022 x64 | Python 3.11.9, 185 tests + imports/page HTTP/MIDI/XML ; preview `.exe` compilée et lancée, capture contrôlée | PDF N/A sans MuseScore ; runtime moteurs distinct encore en cours |
+| Windows Server 2022 x64 | Python 3.11.9, 185 tests + imports/page HTTP/MIDI/XML ; preview `.exe` compilée et lancée, capture contrôlée | PDF initial N/A sans MuseScore ; premier essai MSI 4.7.5 en timeout 180 s, backend natif corrigé à vérifier |
 | Windows Server 2025 x64 | Python 3.11.9, 185 tests + imports/page HTTP/MIDI/XML réussis | PDF N/A sans MuseScore ; aucun test Windows client |
 | Windows 10 x64 | Non testé sur machine ou VM réelle | Ne pas annoncer support certifié |
 | Windows 11 x64 | Non testé sur machine ou VM réelle | Ne pas annoncer support certifié |
@@ -17,11 +17,12 @@ l'installation sur toutes les éditions du système.
 Preuves : [source quatre OS tous réussis, commit 866733c](https://github.com/gaelcado/Song2Agostini/actions/runs/38047686366),
 [preview Windows/macOS, commit 0a534ce](https://github.com/gaelcado/Song2Agostini/actions/runs/38047450886),
 [WSL corrigé, en cours](https://github.com/gaelcado/Song2Agostini/actions/runs/38047849208),
-[runtimes CPU Linux, en cours](https://github.com/gaelcado/Song2Agostini/actions/runs/38047745411),
+[runtimes CPU Linux et Windows, résultat obtenu](https://github.com/gaelcado/Song2Agostini/actions/runs/38047745411),
 [runtime Windows avec FFmpeg/MuseScore, en cours](https://github.com/gaelcado/Song2Agostini/actions/runs/38047854237).
 Le premier runtime Windows a exécuté ADTOF (16,375 s) et Beat This! (2,14 s),
 avec Demucs N/A faute de FFmpeg ; cette preuve partielle est
 [conservée distinctement](https://github.com/gaelcado/Song2Agostini/actions/runs/38047523936).
+Le runtime Linux a maintenant exécuté les trois forwards CPU synthétiques : adtof (18.4 s), beat_this (2.0 s), demucs (9.3 s). Le PDF synthétique Linux est aussi rendu.
 La chaîne modèle locale dans le runtime fraîchement installé a exécuté les trois
 forwards synthétiques en 14,9 s (ADTOF), 4,8 s (Beat This!) et 7,3 s (Demucs).
 Ce contrôle ne fournit aucun score de fidélité musicale.
@@ -67,6 +68,12 @@ la vérification des notices et sources de ses dépendances. Ces builds de test
 ne contiennent pas les runtimes moteurs
 ni les modèles : ils ne constituent pas la distribution autonome complète.
 
+Le premier rendu PDF Windows avec MSI officiel extrait a rencontré un
+`TimeoutExpired` à 180 s, avec log natif vide :
+[preuve d'échec conservée](https://github.com/gaelcado/Song2Agostini/actions/runs/38047854237).
+Le backend Qt imposé à Windows est ensuite corrigé de `offscreen` à `windows` ;
+le contrôle réel de cette correction reste en cours.
+
 `Full CPU runtime smoke`, manuel et limité à 60 minutes par OS, télécharge les
 versions et checkpoints épinglés, vérifie leurs hashes et les imports puis
 exécute des forwards CPU ADTOF et Beat This! sur l'audio artificiel. Demucs
@@ -82,6 +89,10 @@ BSD-2-Clause ; les binaires FFmpeg/MuseScore conservent leurs propres licences
 et ne sont pas distribués. Sans FFprobe, le contrôle de durée audio reste N/A,
 même lorsque le rendu PDF et les forwards fonctionnent.
 Aucun poids, environnement moteur ni audio privé n'est publié en artefact.
+
+La chaîne `platform.platform()` de Python rapporte `Windows-10-10.0.20348`
+pour le runner Server 2022 et `Windows-10-10.0.26100` pour Server 2025.
+Ces numéros de noyau ne transforment pas les runners en Windows 10 client.
 
 Les actions GitHub sont épinglées à leurs SHA ; les tokens ont seulement
 `contents: read`, le checkout ne conserve pas les identifiants et les workflows

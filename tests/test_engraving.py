@@ -208,3 +208,27 @@ def test_beams_skip_chord_followers_and_silent_beats():
     beam_voice_by_beat(measure,2)
     assert len(measure.findall('note/beam[@number="1"]'))==4
     assert all(n.find('beam') is None for n in measure.findall('note') if n.find('chord') is not None or n.find('rest') is not None)
+
+
+@pytest.mark.parametrize('platform,expected',[('win32','windows'),('darwin','cocoa'),('linux','offscreen')])
+def test_export_uses_platform_supported_qt_plugin(tmp_path,monkeypatch,platform,expected):
+    import drum_lab.engraving as module
+    import drum_lab.rendering as rendering
+    monkeypatch.setattr(module,'sys',SimpleNamespace(platform=platform))
+    monkeypatch.setattr(module,'renderer',lambda:'/fake/mscore')
+    monkeypatch.setattr(rendering,'ROOT',tmp_path)
+    monkeypatch.setenv('QT_PLUGIN_PATH','desktop-qt-plugins')
+    calls=[]
+    def export(command,**kwargs):
+        calls.append(kwargs['env'])
+        assert kwargs['env']['QT_QPA_PLATFORM']==expected
+        assert 'QT_PLUGIN_PATH' not in kwargs['env']
+        return fake_render(command,**kwargs)
+    monkeypatch.setattr(module.subprocess,'run',export)
+    midi=pretty_midi.PrettyMIDI(initial_tempo=120)
+    kit=pretty_midi.Instrument(0,is_drum=True)
+    kit.notes.append(pretty_midi.Note(90,36,.1,.2));midi.instruments.append(kit)
+    source=tmp_path/'raw.mid';midi.write(str(source))
+    result=engrave(source,{'bpm':120,'duration_seconds':2},tmp_path/'notation')
+    assert result['status']=='draft_rendered' and len(calls)==1
+    assert (tmp_path/'notation/score.pdf').is_file()

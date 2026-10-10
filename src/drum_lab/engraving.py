@@ -358,7 +358,9 @@ def engrave(midi_path, grid, out, title='Batterie - transcription automatique', 
     ET.ElementTree(root).write(xml_path, encoding='utf-8', xml_declaration=True)
     engine = renderer()
     if not engine: raise RuntimeError('MuseScore absent : MusicXML créé, PDF non rendu')
-    env = dict(os.environ, QT_QPA_PLATFORM='cocoa' if sys.platform=='darwin' else 'offscreen')
+    # Official Windows MuseScore ships qwindows; headless qoffscreen is Linux-only here.
+    platform_plugin = {'darwin':'cocoa', 'win32':'windows'}.get(sys.platform, 'offscreen')
+    env = dict(os.environ, QT_QPA_PLATFORM=platform_plugin)
     command=[engine, '-o', str((out / 'score.pdf').resolve()), str(xml_path.resolve())]
     from .rendering import render
     render_attempts=render(command,env,out)
