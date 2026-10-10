@@ -50,7 +50,7 @@ def main():
         if not target.exists(): link_or_copy(source,target)
         if digest(target)!=spec['sha256']: raise RuntimeError(f'Copie {name} invalide')
     original=ROOT/'work/tools/MuseScore 4.app';musescore=RUNTIME/'tools/MuseScore 4.app'
-    if not musescore.exists(): shutil.copytree(original,musescore,symlinks=True,copy_function=link_or_copy)
+    if not musescore.exists(): shutil.copytree(original,musescore,symlinks=True)
     for name in ('adtof','demucs','beat_this'):
         worker=RUNTIME/'workers'/name/name
         if not worker.is_file(): raise RuntimeError(f'Worker absent: {name}')

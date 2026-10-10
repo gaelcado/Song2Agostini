@@ -22,7 +22,7 @@ def main(argv=None):
         parser.error("--smoke-audio requiert --smoke-test et --smoke-output")
     # Set before importing the pipeline: resources and writable runtime differ.
     frozen_root = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parents[2]))
-    payload = frozen_root / "runtime"
+    payload = (frozen_root / "runtime").resolve()
     if payload.is_dir():
         os.environ.setdefault("DRUM_LAB_RUNTIME_ROOT", str(payload))
     if getattr(sys, "frozen", False):
@@ -114,7 +114,7 @@ def main(argv=None):
                             generated = generate(args.smoke_audio, args.smoke_output,
                                                  config={"separate_drums": True, "compact": True,
                                                          "grid_engine": "beat_this"},
-                                                 title="Test technique — brouillon",
+                                                 title=("Test technique — brouillon" if args.smoke_synthetic else args.smoke_audio.stem),
                                                  synthetic=args.smoke_synthetic)
                             result["report"] = {"status": "passed", "result": generated,
                                                 "frozen": bool(getattr(sys, "frozen", False))}

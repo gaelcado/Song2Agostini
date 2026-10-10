@@ -8,7 +8,7 @@ l'installation sur toutes les éditions du système.
 | --- | --- | --- |
 | macOS Apple Silicon | Source locale Python 3.11.14, MIDI/XML/PDF ; runner macOS 14 Python 3.11.9, 190 tests et smoke installée réussis | PDF runner N/A (MuseScore absent), renderer local parfois SIGABRT |
 | Linux Ubuntu 22.04 | Python 3.11.17, 190 tests réussis et vrais exports MIDI/XML/PDF CI | MuseScore 3 : correction de l’option `--no-audio` validée |
-| Windows Server 2022 x64 | Python 3.11.9, 190 tests + imports/page HTTP/MIDI/XML ; preview `.exe` compilée et lancée, capture contrôlée | PDF initial N/A sans MuseScore ; premier essai MSI 4.7.5 en timeout 180 s, backend natif corrigé à vérifier |
+| Windows Server 2022 x64 | Python 3.11.9, 190 tests + imports/page HTTP/MIDI/XML ; preview `.exe` compilée et lancée, capture contrôlée | PDF natif MuseScore 4.7.5 et trois forwards CPU réussis ; FFprobe absent, audio validation N/A |
 | Windows Server 2025 x64 | Python 3.11.9, 190 tests + imports/page HTTP/MIDI/XML réussis | PDF N/A sans MuseScore ; aucun test Windows client |
 | Windows 10 x64 | Non testé sur machine ou VM réelle | Ne pas annoncer support certifié |
 | Windows 11 x64 | Non testé sur machine ou VM réelle | Ne pas annoncer support certifié |
@@ -18,14 +18,16 @@ Preuves : [source quatre OS tous réussis, commit 7bbe025](https://github.com/ga
 [preview Windows/macOS, commit 0a534ce](https://github.com/gaelcado/Song2Agostini/actions/runs/38047450886),
 [WSL tests/PDF réussis, copie des preuves échouée](https://github.com/gaelcado/Song2Agostini/actions/runs/38048216025),
 [runtimes CPU Linux et Windows, résultat obtenu](https://github.com/gaelcado/Song2Agostini/actions/runs/38047745411),
-[runtime Windows avec backend Qt natif, en cours](https://github.com/gaelcado/Song2Agostini/actions/runs/38048409265).
+[runtime Windows avec PDF et trois forwards réussis](https://github.com/gaelcado/Song2Agostini/actions/runs/38048409265).
 Le premier runtime Windows a exécuté ADTOF (16,375 s) et Beat This! (2,14 s),
 avec Demucs N/A faute de FFmpeg ; cette preuve partielle est
 [conservée distinctement](https://github.com/gaelcado/Song2Agostini/actions/runs/38047523936).
 Le runtime Linux a maintenant exécuté les trois forwards CPU synthétiques : adtof (18.4 s), beat_this (2.0 s), demucs (9.3 s). Le PDF synthétique Linux est aussi rendu.
 La chaîne modèle locale dans le runtime fraîchement installé a exécuté les trois
 forwards synthétiques en 14,9 s (ADTOF), 4,8 s (Beat This!) et 7,3 s (Demucs).
-Ce contrôle ne fournit aucun score de fidélité musicale.
+Le runtime Windows avec outils vérifiés a aussi exécuté les trois forwards CPU :
+ADTOF 16,2 s, Beat This! 2,2 s et Demucs 7,5 s. Son PDF synthétique est rendu.
+Ces contrôles ne fournissent aucun score de fidélité musicale.
 
 
 ## Contrôles reproductibles
@@ -72,7 +74,7 @@ Le premier rendu PDF Windows avec MSI officiel extrait a rencontré un
 `TimeoutExpired` à 180 s, avec log natif vide :
 [preuve d'échec conservée](https://github.com/gaelcado/Song2Agostini/actions/runs/38047854237).
 Le backend Qt imposé à Windows est ensuite corrigé de `offscreen` à `windows` ;
-le contrôle réel de cette correction reste en cours.
+[le contrôle réel a réussi](https://github.com/gaelcado/Song2Agostini/actions/runs/38048409265), avec MIDI, MusicXML et un PDF natif valide (`%PDF-1.4`).
 
 `Full CPU runtime smoke`, manuel et limité à 60 minutes par OS, télécharge les
 versions et checkpoints épinglés, vérifie leurs hashes et les imports puis
