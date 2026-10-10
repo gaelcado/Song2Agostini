@@ -50,6 +50,9 @@ jobs:
           $destination = (wsl.exe -d Ubuntu-24.04 -- wslpath -u "$env:GITHUB_WORKSPACE").Trim()
           wsl.exe -d Ubuntu-24.04 -- cp -r /tmp/atelier-batterie/work/platform-smoke "$destination/wsl-evidence"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $env:WSL_UTF8 = '1'
+          wsl.exe --list --verbose | Out-File -FilePath 'wsl-evidence/wsl-distributions.txt' -Encoding utf8
+          wsl.exe --version | Out-File -FilePath 'wsl-evidence/wsl-application-version.txt' -Encoding utf8
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
