@@ -1,0 +1,16 @@
+[
+  {
+    "hypothesis": "Premiers temps pr\u00e9dits sur mix par Beat This final0 CPU, m\u00eames d\u00e9tections et seuils ADTOF s\u00e9par\u00e9; phase ind\u00e9pendante des instruments",
+    "engine": "adtof",
+    "grid_engine": "beat_this",
+    "separate_drums": true,
+    "compact": true,
+    "thresholds": [
+      0.22,
+      0.24,
+      0.32,
+      0.22,
+      0.3
+    ]
+  }
+]

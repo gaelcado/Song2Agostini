@@ -1,0 +1,26 @@
+[
+  {
+    "hypothesis": "Baseline ADTOF sur mix complet avec seuils publiés",
+    "thresholds": [
+      0.22,
+      0.24,
+      0.32,
+      0.22,
+      0.3
+    ],
+    "separate_drums": false,
+    "compact": true
+  },
+  {
+    "hypothesis": "Isoler la batterie pour limiter les activations dues aux instruments mélodiques ; mesurer sans supposer amélioration",
+    "thresholds": [
+      0.22,
+      0.24,
+      0.32,
+      0.22,
+      0.3
+    ],
+    "separate_drums": true,
+    "compact": true
+  }
+]

@@ -1,0 +1,48 @@
+name: Experimental WSL source smoke
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  wsl:
+    runs-on: windows-2022
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - name: Install Ubuntu WSL (Canonical action, MIT)
+        uses: Ubuntu/WSL/.github/actions/wsl-install@3b7a6b2a43af18aa541eeee1669ac27656630097
+        with:
+          distro: Ubuntu-24.04
+      - name: Test exact commit inside WSL
+        uses: Ubuntu/WSL/.github/actions/wsl-bash@3b7a6b2a43af18aa541eeee1669ac27656630097
+        with:
+          distro: Ubuntu-24.04
+          exec: |
+            set -eu
+            export DEBIAN_FRONTEND=noninteractive
+            apt-get update
+            apt-get install -y git python3 python3-venv ffmpeg musescore3
+            git clone --no-checkout https://github.com/${{ github.repository }}.git /tmp/atelier-batterie
+            cd /tmp/atelier-batterie
+            git checkout --detach ${{ github.sha }}
+            python3 -m venv /tmp/atelier-test-env
+            /tmp/atelier-test-env/bin/python -m pip install . pytest==8.4.2
+            /tmp/atelier-test-env/bin/python -m pytest -q
+            /tmp/atelier-test-env/bin/python scripts/platform_smoke.py --require-pdf
+            uname -a > work/platform-smoke/wsl-kernel.txt
+            cat /etc/os-release > work/platform-smoke/wsl-distribution.txt
+      - name: Copy synthetic evidence to Windows workspace
+        shell: pwsh
+        run: |
+          $destination = (wsl.exe -d Ubuntu-24.04 -- wslpath -u "$env:GITHUB_WORKSPACE").Trim()
+          wsl.exe -d Ubuntu-24.04 -- cp -r /tmp/atelier-batterie/work/platform-smoke "$destination/wsl-evidence"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: wsl-synthetic-evidence
+          path: wsl-evidence/
+          if-no-files-found: warn
+          retention-days: 14

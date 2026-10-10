@@ -1,0 +1,1 @@
+Lire AGENTS.md. Pour installer l’application, suivre INSTALL.md. Pour travailler sur la recherche, lire aussi lab/AGENTS.md et docs/separation.md. Préserver les audios et partitions privées, sans upload externe.

@@ -1,0 +1,7 @@
+{
+  "version": "4.7.5.260831071",
+  "url": "https://github.com/musescore/MuseScore/releases/download/v4.7.5/MuseScore-Studio-4.7.5.260831071.dmg",
+  "dmg_sha256": "5a8cc26994d3f346d3e7d88c6a1583959e990ee9346b00d7b1d3f9498de6473a",
+  "location": "work/tools/MuseScore 4.app",
+  "scope": "local rendering only"
+}

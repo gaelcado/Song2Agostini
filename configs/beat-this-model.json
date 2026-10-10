@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "checkpoint": "work/models/beat_this/final0.ckpt",
+  "sha256": "8c328b45f59d8dd3dff219253ff6a8d6482be57d0133a29140e2febbf8eb8331",
+  "url": "https://cloud.cp.jku.at/public.php/dav/files/7ik4RrBKTS273gp/final0.ckpt",
+  "code_repository": "https://github.com/CPJKU/beat_this",
+  "code_commit": "b95c8ab0c58c2d9fcfd40508ae8dffbc05ac4f5c",
+  "code_license": "MIT",
+  "weights_license": "MIT",
+  "license_source": "https://github.com/CPJKU/beat_this#license"
+}

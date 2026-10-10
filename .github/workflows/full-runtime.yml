@@ -1,0 +1,46 @@
+name: Full CPU runtime smoke
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  runtime:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, windows-2022]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.11'
+      - name: Install Linux engraving tools
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y musescore3 ffmpeg
+      - name: Install pinned workers and verify checkpoint hashes
+        run: python scripts/bootstrap.py --only all --runtime-root work/full-ci --allow-missing-tools
+      - name: Select isolated app interpreter
+        run: |
+          python -c "import os; from pathlib import Path; p=Path('work/full-ci/envs/app') / ('Scripts/python.exe' if os.name=='nt' else 'bin/python'); open(os.environ['GITHUB_ENV'], 'a').write('APP_PYTHON='+p.resolve().as_posix()+'\n')"
+      - name: Generate artificial audio and test exports
+        run: '"$APP_PYTHON" scripts/platform_smoke.py'
+      - name: Real CPU forwards on artificial audio
+        run: '"$APP_PYTHON" scripts/model_smoke.py --runtime-root work/full-ci --audio work/platform-smoke/synthetic.wav'
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: full-runtime-${{ matrix.os }}
+          path: |
+            work/full-ci/bootstrap.log
+            work/full-ci/runtime-install.json
+            work/platform-smoke/
+            work/model-smoke/
+          if-no-files-found: warn
+          retention-days: 14

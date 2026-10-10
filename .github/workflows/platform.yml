@@ -1,0 +1,53 @@
+name: Platform source tests
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, macos-14, windows-2022, windows-2025]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.11'
+      - name: Install isolated source app
+        run: python scripts/bootstrap.py --only app --runtime-root work/ci-runtime
+      - name: Select isolated app interpreter
+        run: |
+          python -c "import os; from pathlib import Path; p=Path('work/ci-runtime/envs/app') / ('Scripts/python.exe' if os.name=='nt' else 'bin/python'); open(os.environ['GITHUB_ENV'], 'a').write('APP_PYTHON='+p.resolve().as_posix()+'\n')"
+      - name: Install test dependencies in isolated app
+        run: '"$APP_PYTHON" -m pip install pytest==8.4.2'
+      - name: Check installed app
+        run: python scripts/bootstrap.py --only app --runtime-root work/ci-runtime --check
+      - name: Unit tests (synthetic fixtures)
+        run: '"$APP_PYTHON" -m pytest -q'
+      - name: Install Linux engraving tools
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y musescore3 ffmpeg
+      - name: Installed app smoke
+        run: '"$APP_PYTHON" scripts/platform_smoke.py'
+      - name: Linux PDF chain required
+        if: runner.os == 'Linux'
+        run: '"$APP_PYTHON" scripts/platform_smoke.py --out work/platform-pdf --require-pdf'
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: platform-${{ matrix.os }}
+          path: |
+            work/platform-smoke/
+            work/platform-pdf/
+          if-no-files-found: warn
+          retention-days: 14

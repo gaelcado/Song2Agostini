@@ -1,0 +1,23 @@
+.venv/
+work/
+outputs/*
+!outputs/.gitkeep
+data/raw/*/*
+data/reference/*
+!data/reference/.gitkeep
+data/manifest.json
+data/research-manifest.json
+data/benchmark*manifest.json
+musique/
+musique IA/
+*.egg-info/
+__pycache__/
+.pytest_cache/
+.DS_Store
+
+build/
+dist/
+.env
+.env.*
+*.pem
+*.key

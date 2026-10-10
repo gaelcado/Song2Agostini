@@ -1,0 +1,212 @@
+## Distribution — 10 octobre 2026
+
+README/INSTALL/AGENTS/CLAUDE/STATUS à la racine simplifiés pour les musiciens et leurs agents. Scripts des références et ancienne vue déplacés sous lab/ ; les originaux et runs sont préservés. Licence MIT pour le code propre ; notices tiers distinctes. Publication limitée aux sources, aucun audio/référence/poids.
+
+Installation neuve quatre environnements isolés, imports et pip-check réussis ; trois poids vérifiés par hashes. Qt desktop installé et fenêtre source/preview gelée lancées sur Mac. 179 tests logiciels passent. Smoke Mac MIDI→MusicXML→PDF réussi après un abort natif MuseScore documenté. Windows Server/WSL automatisés dans .github/workflows ; Windows 10/11 clients encore non testés. Construction complète privée en cours : redistribution publique bloquée par absence de licence explicite ADTOF-port, sans inventer une autorisation.
+
+Preuves locales privées : work/release-smoke/runtime/runtime-install.json, work/platform-smoke-retry/report.json, work/desktop-smoke/. Les tests synthétiques et d’installation ne sont pas un benchmark musical. Fidélité musicale reste N/A.
+
+# État — 10 octobre 2026
+
+Projet : Song2Agostini. Dépôt public : https://github.com/gaelcado/Song2Agostini. Les originaux, références, environnements, poids, caches et sorties restent hors Git.
+
+## Titres des morceaux — affichage produit
+
+Les titres audio déposés « Deluxe Michael » et « Bacalao con pan » sont conservés
+sur la projection audio seule. Le produit retrouve le titre par SHA-256 même
+pour les copies nommées piece_01/piece_02 ; aucun titre n'est attribué par seul
+identifiant ou nom de fichier. Pour un audio nouveau, le nom du fichier sert de
+titre. Interface, entête PDF/MusicXML, nouveaux runs/CLI et noms de téléchargements
+utilisent ce titre ; les identifiants historiques restent internes, les runs
+figés inchangés. Le sous-agent contrôle association et séparation des références.
+166 tests passent en 6,62 s. Vérification navigateur réelle : entrée et sortie
+« Deluxe Michael », téléchargement `Deluxe Michael - partition.pdf`,
+job `5fdac825586043aa8afe2b0eb1acbb02`, capture `work/product-titles.png`.
+Sous-agent : trois pages inspectées, titre lisible, événements et MIDI identiques
+à la précédente sortie, XML musical inchangé ; rapport `work/title-review.json`.
+Deux premiers jobs ont échoué sur le SIGABRT natif MuseScore ; échecs conservés.
+L’export PDF avec option `--no-audio` a réussi en CLI puis dans le produit,
+sans annoncer pour autant une correction démontrée de tout crash natif.
+
+## Gravure française et phase audio v5 — état courant
+
+La sortie utilise désormais une convention française compatible Agostini :
+grosse caisse sous la portée (D4 interne), caisse claire ligne centrale (B4),
+cymbales voix haute, grosse caisse/caisse claire voix basse ; ligatures explicites
+par temps. La légende décrit des emplacements, sans noms de notes de piano.
+Les pitches GM, coups et tempos ne sont pas modifiés par cette présentation.
+Sources pédagogiques et limites de MuseScore : `docs/notation.md`.
+
+Le retour musicien sur la mesure huit visait la sortie historique de l'app,
+qui choisissait sa première pulsation librosa comme début de mesure. Le produit
+emploie maintenant explicitement Beat This! avec nettoyage des pics doublés,
+indépendant des instruments et des références. Sur piece_01 : 26 pulsations
+et cinq downbeats doublés retirés ; 77/77 intervalles downbeats de quatre temps.
+La phase 4/4 reste une hypothèse, les changements de rythme restent limités.
+Numérotation différente : les anciennes et nouvelles mesures huit ne désignent
+pas le même instant audio. Détails : `docs/audio-grid-v5.md`.
+
+Unique nouvel essai : `20261010T104109-a75f54de`, 6,89 s avec caches, sept essais
+sur treize (six disponibles), aucun contrôle piece_02. Même MIDI brut et mêmes
+1 162 événements ; 1 151 attaques gravées après 11 collisions déclarées.
+Sous-agent isolé : trois pages lisibles, intégrité passée ; aucun snare sur le
+premier slot des mesures contre 35 dans l'ancienne app. Snare sur pulsations
+entières 1/2/3/4 : 0/50/0/50, avec 97 autres attaques sur subdivisions ;
+depuis 29,65 s (ancienne mesure huit), 0/49/0/48. Feedback agrégé
+`work/verification/agostini-v5/snare-phase-aggregate.json`. Ce diagnostic ne mesure
+pas la fidélité. Référence et phase non validées humainement : F1 N/A.
+Les métriques de déplacement >50 ms peuvent différer de deux coups selon
+JSON/MIDI, du fait de l'arrondi temporel MIDI inférieur à 1 ms.
+
+Parcours produit réel vérifié sans cache de grille fourni : job
+`7a146108655c4d62984e37f595d6078f`, 6,48 s, aperçu chargé et téléchargements
+PDF/MusicXML/MIDI réussis. Trois pages contrôlées indépendamment ; XML égal
+au run v5 hors titre, MIDI identiques, hashes production exacts. Feedback
+`output/agent-feedback.json` du job et preuves privées conservés. Une première
+tentative de produit a échoué après trois SIGABRT MuseScore, puis une reprise
+identique a réussi avec deux tentatives d'export. L'instabilité native reste
+une limite, aucun remplacement par une ancienne partition. Capture
+`work/product-agostini-v5.png`. 166 tests passent en 6,56 s.
+
+La boucle s'arrête ici après le jugement final. Le moteur de détection reste
+Demucs/ADTOF ; aucune substitution kick/snare, aucun coup imposé au premier
+temps ni simplification pédagogique supplémentaire. Prochaine action musicale :
+validation alignée dans le chat pour mesurer les erreurs locales restantes.
+
+## Produit recentré et diagnostic de détection v4 — historique
+
+Le handoff `docs/handoff-produit-et-simplification.md` définit le produit :
+audio → génération → aperçu PDF et téléchargements. Navigation de validation,
+routes `/verification`, assets associés et `/api/verification` retirés du
+serveur, y compris pour les sessions locales valides. Les documents, décisions
+et références historiques restent sur disque ; la vérification se déroule
+dans le chat. 43 tests ciblés interface/store/pipeline passent à cette étape.
+
+Retour musicien : confusion grosse caisse/caisse claire et caisse claire trop
+souvent au premier temps. Audit du mapping : aucune inversion générale trouvée.
+Lecture visuelle et analyse du signal par sous-agent isolé : hypothèse de phase
+des mesures plausible, erreurs locales de détection encore possibles ; aucun
+jugement humain ni écoute humaine inventés. Feedback privé filtré sous
+`work/verification/musical-v4/feedback-public.json`, scores N/A.
+
+Défaut confirmé : le premier beat suivi n'est pas une détection de premier
+temps. Deux essais bornés terminés, sans promotion du moteur produit :
+
+- Beat This! : run `20261010T102742-6af05201`, 10,30 s CPU, mêmes 1 162 coups bruts. Caisses claires exactement au début des mesures prédites : 35 → 2 ; grosses caisses : 17 → 39. Diagnostic sur les prédictions uniquement, pas fidélité. Intégrité passée, PDF trois pages accepté comme brouillon lisible ; origine et 4/4 restent provisoires.
+- Timbrica kick/snare puis ADTOF : run `20261010T102825-8b369805`, 55,58 s CPU, 1 059 coups. Le sous-agent signale un possible filtrage excessif des grosses caisses ; phase inchangée. PDF figé quatre pages rejeté pour page orpheline. Nouvelle pagination testée séparément dans `work/layout-v4-smoke` : kit trois pages accepté, phase quatre pages accepté sans gain de lisibilité démontré face aux trois pages précédentes. Notes, tempos, compression et MIDI conservés ; aucun run figé modifié.
+
+Correction des intervalles d'extrapolation aux bords de la grille, légende plus
+claire et réserve de titre/légende dans la pagination. Aucun nouveau filtrage
+pédagogique ni suppression de nuances. Six essais enregistrés sur treize ;
+sept restent disponibles, piece_02 n'a pas été utilisé. Boucle arrêtée après
+ces deux comparaisons ; F1 N/A, aucune meilleure méthode désignée. Recherche
+et licences : `docs/detection-v4.md`, `docs/kit-detection-experiment.md`.
+
+148 tests passent (9,01 s). Parcours navigateur réel vérifié sur piece_01 :
+progression terminée, aperçu chargé et PDF/MusicXML/MIDI téléchargés. Traitement
+local `fa0c0f2b3a80475eb1f4e9be35c28362`, 5,80 s avec cache et une reprise
+MuseScore. Sous-agent isolé : toutes les trois pages acceptées comme brouillon
+lisible, percussion seule, 1 147 attaques XML correspondant aux 1 162 coups
+quantifiés après 15 collisions déclarées. Hash PDF/production concordant ;
+feedback `work/verification/musical-v4/app-output/feedback-public.json`.
+Capture `work/product-simplified-v4.png`. Le profil de détection
+produit reste Demucs/ADTOF avec grille librosa, marqué brouillon. Prochaine
+étape : valider la phase et les confusions locales avec une référence alignée
+via le chat ; les diagnostics d'activation ne remplacent pas cette validation.
+
+## Corpus externe et validation inspectable — historique avant le handoff
+
+Dix compositions multi-instruments d'auteur sont acquises avec leurs MIDI
+originaux sous CC0 : cinq auteurs, 16,13 minutes. Audit indépendant des licences,
+hashes, conversions et correspondances structurelles terminé : dix entrées
+admises, aucune référence encore évaluable. Un candidat incohérent a été
+remplacé avant inférence. Inventaire et limites : `docs/corpus.md` ; feedback
+public `work/corpus-quality.json`. Il s'agit de fichiers entiers publiés, souvent
+des musiques de jeu ; le caractère non bouclé n'est établi que pour deux pièces.
+Le supplément de dix performances GMD batterie seule reste distinct.
+
+La recherche ne charge que `data/benchmark-research-manifest.json`. Les MIDI et
+candidates non quantifiées restent côté vérificateur. Une première baseline
+audio seule, profil unique `configs/baseline.json`, a produit dix chaînes
+complètes et 25 pages PDF, avec intégrité contrôlée séparément. Première passe :
+neuf succès et un abort MuseScore ; une seule reprise du cas concerné avec le
+même profil et le cache a réussi. L'échec est conservé dans les journaux.
+Elle ne touche ni les quatre essais de piece_01 ni le contrôle piece_02. Fidélité
+N/A, aucun réglage ni meilleure méthode annoncée. Sous-agent distinct : les
+25 pages sont inspectées, batterie seule et intégrité validée ; dix brouillons
+rejetés pour présentation pédagogique (légende manquante, un texte coupé,
+sept dernières pages trop peu remplies). Une seule variante de présentation
+a corrigé légende, reprise et équilibre des pages, sans changer les événements
+ni la grille : huit PDF (18 pages) sont acceptés comme brouillons lisibles par
+le sous-agent. Deux cas restent en échec MuseScore natif après les reprises
+bornées ; leurs anciens PDF ne servent pas de remplacement. Baseline conservée
+dans `work/benchmark-v1-final.json`, états courants `work/benchmark-results.json`,
+avis public `work/benchmark-presentation-feedback.json`. Invariance des JSON,
+MIDI et grilles contrôlée par hashes ; expansion XML contrôlée indépendamment.
+La boucle est arrêtée après cette variante. Rapport `docs/benchmark-presentation.md`.
+
+L'onglet `/verification` présente désormais la source et la saisie candidate en
+notation musicale, avec choix des mesures, zoom, audio et décisions partielles
+privées. Les trois pages source de piece_01 sont visibles, seule la première
+est numérisée ; aucun alignement audio n'est supposé. Les vues des dix MIDI
+sources sont des projections de lecture clairement distinctes de la vérité
+symbolique originale. Les huit PDF moteurs courants et leurs aperçus sont
+consultables dans un panneau distinct ; les deux échecs sont affichés clairement.
+L'avis de lisibilité n'apparaît que si son morceau et son hash PDF concordent.
+Les confirmations ne promeuvent jamais automatiquement
+une référence complète. Voir `docs/human-review-interface.md`.
+
+Audit code indépendant : `docs/corpus-integration-review.md`, budgets de tout
+le batch contrôlés avant inférence. 106 tests passent, preuve
+`work/tests-corpus-delivery-final.log` ; contrôles synthétiques, pas benchmark musical.
+
+Prochaine action technique : stabiliser l'export PDF natif, sans relancer de
+variantes musicales tant que les références ne sont pas validées et alignées.
+L'interface permet cette qualification humaine sans modifier les prédictions.
+Capture de lecture réelle : `work/validation-interface-final.png`.
+
+## Recherche poursuivie — boucle v3
+
+Fidélité actuelle : N/A. Quatre essais de développement enregistrés sur treize, dont un échec de rendu ; neuf essais restent disponibles. Aucun essai de contrôle. Trois baselines complètes ont maintenant été figées et contrôlées par sous-agent en contexte distinct :
+
+| Méthode | Run | Coups bruts | Pages | Retour indépendant |
+|---|---|---:|---:|---|
+| ADTOF mix | 20261010T094216-38f99831 | 1 188 | 3 | Brouillon lisible accepté |
+| Demucs → ADTOF | 20261010T092826-05720728 | 1 162 | 3 | Brouillon lisible accepté |
+| DrumScript mix | 20261010T094832-90460d7c | 989 | 4 | Rejet pédagogique : dernière page trop vide |
+
+L’intégrité des trois sorties est passée ; aucune F1 musicale calculée et aucune méthode retenue comme meilleure. Le nombre de coups ne mesure pas la fidélité. Nouveau mix : 4,32 s avec cache ; DrumScript : 38,01 s, DSP sans poids appris ni séparation, 123 labels inconnus exclus explicitement et conservés dans le résultat brut. Rapport public : `work/research-v3-results.json`, état agrégé `work/research-progress.json`.
+
+La première page de la référence manuelle est numérisée côté privé (16 mesures écrites). Paquet humain `work/verification/reference-preparation-v3/validation-humaine.pdf` ; aucune prédiction consultée pour cette saisie. Numérisation candidate et secondes non validées ; les drapeaux restent false. Contre-vérification indépendante terminée : candidate_ready_for_human_review ; une erreur certaine de saisie, une certitude documentaire et un défaut de rendu corrigés, paquet de six pages relu. Huit groupes de confirmations humaines subsistent. Pages restantes et alignement indépendant restent à préparer. Aucun événement attendu n’a été transmis à la recherche.
+
+`cycle --resume-run IDENTIFIANT` reprend une sortie figée sans réinférence. Audio, configuration, pièce, nature synthétique, statut, gel de contrôle et budget sont contrôlés ; intégrité invalide ou avis manquant interrompt la sélection. L’évaluateur et le schéma refusent toute référence réelle non validée humainement ou non alignée indépendamment. Revue indépendante et tests de régression : `docs/loop-review-v3.md`. 83 tests complets passent, preuve `work/tests-final-v3.log`.
+
+Une seule hypothèse audio est proposée, non exécutée : ajustement robuste de la grille sur fenêtres de huit beats. Aucun seuil optimisé sans mesure évaluable. Prochaine action : validation humaine du paquet et alignement audio indépendant pour scorer le passage explicitement couvert ; pas de pourcentage global extrapolé depuis une page.
+
+## Livraison et preuves
+
+- Une chaîne audio seule : contrôle d’entrée → Demucs CPU → ADTOF → grille depuis le mix → MIDI quantifié → MusicXML percussion → PDF MuseScore. Aucun accès aux feuilles manuelles.
+- Interface locale `drum-lab serve --port 8765`, sélection audio, progression, aperçu PDF, téléchargements PDF/MusicXML/MIDI quantifié/brut et hypothèses visibles. Génération réelle réussie depuis le navigateur : jobs `dbf3f23367404b5ca1ccf4900b79bf7e` et `c9847e843a1d45eb9b7b404b60da3178` ; téléchargements réels des trois formats vérifiés par hashes. Aperçu première page PNG réel vérifié après correction du lecteur PDF noir dans IAB, job `c38630efb1f1447caa4946f051b6846f` ; capture `work/interface-final.png`.
+- Nettoyage : un moteur de notation actif (`engraving.py`), anciens plans sous `docs/archive`, `STATUS.md` pointe vers ce document ; clone tiers incomplet retiré. Code, données, recherche et vérification ont des emplacements distincts.
+- 83 tests réussis : matching, doublons, couverture simplifiée, absence de fuite, quantification, notation, contrôles d’intégrité, refus d’une sélection sans avis indépendant, entrées/erreurs/isolation HTTP et téléchargements. Les fixtures synthétiques vérifient le logiciel uniquement.
+- Séparation réelle Michael : 89,50 s CPU la première fois, puis cache ; modèle et poids épinglés dans `configs/demucs-model.json`, dependencies isolées.
+- Deux premiers essais complets documentés : mix `20261010T092819-d0f287ce` échoué au rendu natif MuseScore ; séparation `20261010T092826-05720728` rendu réussi. Registre `work/research-v2-results.json`. Aucun verdict de supériorité musicale.
+- Sortie figée du second run : 1 162 coups bruts et quantifiés ; 1 147 coups gravés après 15 collisions du même instrument explicitement déclarées ; PDF 3 pages. `outputs/piece_01` pointe vers ce run, sans copie concurrente. Ancienne livraison 6 pages conservée dans `work/archive/`.
+- Sous-agent en contexte isolé : les trois pages inspectées, batterie uniquement, aucun élément coupé ni collision visible. Verdict `accepted_as_readable_draft`, lié aux hashes dans `agent-feedback.json`. Rapport détaillé privé, feedback agrégé seulement. Vérificateur machine : intégrité passée ; fidélité N/A ; grille brouillon.
+- Quantification : déplacement médian 40,3 ms, maximum 86,2 ms, 200 coups déplacés de plus de 50 ms. Ces chiffres constituent des diagnostics, pas une validation musicale. XML/MIDI vérifiés indépendamment après origine temporelle déclarée (écart maximal ~1,66 ms dû notamment à la sérialisation MIDI).
+
+## Vérification et boucle d’optimisation
+
+`run` ne connaît aucune référence. `cycle` confie les artefacts à un processus séparé ; le sous-agent Codex reçoit un contexte neuf et les références exclusivement côté vérification. La sélection est bloquée tant que la lisibilité indépendante et les métriques ne sont pas disponibles. Le CLI ne crée pas automatiquement d’agent IA. Isolation logique/procédurale sur disque partagé, pas sandbox OS.
+
+Les deux partitions manuelles sont confirmées **simplifiées pour l’apprentissage**. Politique v2 : absence évaluable seulement dans les passages/classes explicitement validés comme tels ; détails supplémentaires hors périmètre comptés séparément, précision/F1 N/A si leur périmètre est incomplet. Politique v1 conservée comme historique.
+
+Les originaux des deux paires sont présents, copiés avec hashes. Manifeste privé : `data/manifest.json` ; manifeste audio seul : `data/research-manifest.json`. Validation humaine des références symboliques et alignement indépendant encore absents ; aucun score musical réel, aucun réglage sur piece_02, aucun réentraînement. Deux pièces ne prouvent pas la généralisation.
+
+## Limites et prochaine action
+
+La partition est un brouillon exploitable pour révision, pas encore une fiche définitive pour élèves. Ajouter une légende du kit dans l’édition pédagogique ; valider grille, premiers temps et passages ambigus. La surdétection ne peut pas être certifiée absente avant cette comparaison. Swing, triolets et changements de signature ne sont pas inférés ; structure musicale scorée N/A.
+
+MuseScore a présenté un abort natif intermittent : rendus sérialisés et au plus trois tentatives seulement pour cet abort, logs conservés. Export XML→MIDI natif non validé ; le MIDI livré vient directement de la quantification. All-In-One reste bloqué par son import madmom/pkg_resources ; DrumScript reste expérimental sans benchmark réel. Licences et versions : `docs/tools.md`.
+
+Prochaine étape : côté vérificateur, numériser les annotations explicites et leur couverture, faire confirmer ces données par l’humain, puis fixer l’alignement depuis audio/référence sans consulter les prédictions. Scorer alors les sorties conservées, formuler une hypothèse ciblée sur piece_01, réutiliser les caches et conserver/rejeter selon score et lisibilité. Maximum 12 variantes après baseline ; contrôler piece_02 uniquement après gel.

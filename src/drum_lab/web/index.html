@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="fr">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Song2Agostini · Transcription locale</title><link rel="stylesheet" href="/style.css"><script defer src="/app.js"></script></head>
+<body>
+<header class="topbar"><a class="brand" href="/" aria-label="Song2Agostini, accueil"><span class="mark" aria-hidden="true">▥</span> Song2Agostini</a><span class="local"><span></span> Sur votre ordinateur</span></header>
+<main>
+  <div class="intro"><p class="eyebrow">DE L’ÉCOUTE À LA PRATIQUE</p><h1>Votre audio.<br>Votre partition de batterie.</h1><p class="subtitle">Déposez un morceau, laissez le moteur local l’analyser,<br class="desktop-break"> puis ouvrez une partition à travailler.</p></div>
+  <div class="workspace">
+    <section class="input-panel" aria-labelledby="input-title">
+      <div class="section-heading"><span class="step">01</span><h2 id="input-title">Choisir votre audio</h2></div>
+      <label class="dropzone" id="dropzone" for="audio"><span class="upload-icon" aria-hidden="true">↑</span><strong id="file-label">Déposez un fichier ici</strong><span id="file-detail">ou cliquez pour le choisir</span><span class="formats">WAV · FLAC · MP3</span><input id="audio" type="file" accept=".wav,.flac,.mp3,audio/wav,audio/flac,audio/mpeg"></label>
+      <p class="limits">200 Mo maximum · Jusqu’à 30 minutes</p>
+      <button id="generate" class="primary" disabled>Générer la partition <span aria-hidden="true">→</span></button>
+      <p class="privacy"><span aria-hidden="true">⌂</span> L’audio et la partition restent sur cet ordinateur.</p>
+      <div id="progress-section" class="progress-section" hidden><div class="progress-label"><strong id="progress-label">Préparation…</strong><span id="percent">0 %</span></div><progress id="progress" max="100" value="0" aria-label="Progression de la génération"></progress><p id="progress-note">Le calcul local peut prendre plusieurs minutes.</p></div>
+      <p id="error" class="error" role="alert" hidden></p>
+    </section>
+    <section class="output-panel" aria-labelledby="output-title">
+      <div class="section-heading"><span class="step">02</span><h2 id="output-title">Votre partition</h2><span id="draft-badge" class="badge" hidden>Brouillon</span></div>
+      <div id="empty" class="empty-state"><div class="score-art" aria-hidden="true"><div class="staff"><span>×</span><span>♪</span><span>×</span><span>♪</span></div><div class="staff second"><span>♪</span><span>×</span><span>♪</span><span>×</span></div></div><h3>Prête à prendre forme</h3><p>La partition PDF apparaîtra ici<br>une fois l’analyse terminée.</p></div>
+      <div id="result" hidden><div class="downloads" id="downloads"></div><div class="preview-heading"><span>Aperçu · première page</span><a id="open-pdf" target="_blank" rel="noopener">Ouvrir le PDF complet ↗</a></div><img id="pdf-preview" alt="Première page de la partition de batterie"><p id="preview-unavailable" class="preview-help" hidden>L’aperçu est indisponible. Ouvrez ou téléchargez le PDF complet.</p><p class="preview-help">Le PDF complet contient toutes les pages de la partition.</p></div>
+    </section>
+  </div>
+  <section id="warnings" class="warnings" aria-labelledby="warnings-title" hidden><h2 id="warnings-title">Repères pour la lecture</h2><ul id="warning-list"></ul></section>
+  <aside class="reading-note"><span class="note-icon" aria-hidden="true">♪</span><div><strong>Une base pour apprendre à l’oreille</strong><p>La grille rythmique est estimée à partir de l’audio. Le tempo, le premier temps et certaines notes peuvent demander une vérification à l’écoute.</p></div></aside>
+</main>
+<footer>SONG2AGOSTINI <span>Analyse locale · Partition éditable</span></footer>
+</body></html>

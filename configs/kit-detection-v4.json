@@ -1,0 +1,16 @@
+[
+  {
+    "hypothesis": "Séparer kick et snare via deux masques Timbrica sur batterie Demucs, détecter uniquement leur classe correspondante avec ADTOF et conserver les autres classes ADTOF du drum stem original; mesurer une seule variante sans supposer de gain",
+    "engine": "adtof_kit",
+    "separate_drums": true,
+    "grid_engine": "librosa",
+    "thresholds": [0.22, 0.24, 0.32, 0.22, 0.30],
+    "compact": true,
+    "experimental": true,
+    "kit_revision": "3b3475f9b84c676d05441e38b16ed5deaa74d582",
+    "kit_weights_sha256": {
+      "kick": "f3dd5b5e3b23dafaa41d401c90595bb8ea7f121424c3b90885d751e3e96cb0c7",
+      "snare": "fc1706e740ff17e4c7fd4c487016bafc53d7500cad874c829d69e54682061f4f"
+    }
+  }
+]

@@ -1,0 +1,11 @@
+[
+  {
+    "hypothesis": "Mêmes coups ADTOF ; fusion des doubles pics Beat This <0.35 période médiane par continuité temporelle audio, downbeats dédoublonnés sans rephasage forcé ; gravure batterie pédagogique",
+    "engine": "adtof",
+    "grid_engine": "beat_this",
+    "grid_cache": "work/runs/20261010T102742-6af05201/grid.json",
+    "separate_drums": true,
+    "compact": true,
+    "thresholds": [0.22, 0.24, 0.32, 0.22, 0.30]
+  }
+]

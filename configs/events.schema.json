@@ -1,0 +1,179 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "kind",
+    "piece_id",
+    "events"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "kind": {
+      "enum": [
+        "prediction",
+        "reference"
+      ]
+    },
+    "piece_id": {
+      "enum": [
+        "piece_01",
+        "piece_02",
+        "synthetic",
+        "bench_01",
+        "bench_02",
+        "bench_03",
+        "bench_04",
+        "bench_05",
+        "bench_06",
+        "bench_07",
+        "bench_08",
+        "bench_09",
+        "bench_10",
+        "tech_01",
+        "tech_02",
+        "tech_03",
+        "tech_04",
+        "tech_05",
+        "tech_06",
+        "tech_07",
+        "tech_08",
+        "tech_09",
+        "tech_10"
+      ]
+    },
+    "synthetic": {
+      "type": "boolean"
+    },
+    "human_validated": {
+      "type": "boolean"
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "time",
+          "class"
+        ],
+        "properties": {
+          "time": {
+            "type": "number",
+            "minimum": 0
+          },
+          "class": {
+            "enum": [
+              "kick",
+              "snare",
+              "hi-hat",
+              "toms",
+              "cymbals"
+            ]
+          },
+          "pitch": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 127
+          },
+          "musical": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "coverage": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "start",
+          "end",
+          "classes"
+        ],
+        "properties": {
+          "start": {
+            "type": "number",
+            "minimum": 0
+          },
+          "end": {
+            "type": "number",
+            "minimum": 0
+          },
+          "classes": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "kick",
+                "snare",
+                "hi-hat",
+                "toms",
+                "cymbals"
+              ]
+            }
+          },
+          "absence_evaluable": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "alignment_fixed": {
+      "type": "boolean"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "reference"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "coverage",
+          "human_validated"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "reference"
+          }
+        },
+        "not": {
+          "required": [
+            "synthetic"
+          ],
+          "properties": {
+            "synthetic": {
+              "const": true
+            }
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "human_validated",
+          "alignment_fixed"
+        ],
+        "properties": {
+          "human_validated": {
+            "const": true
+          },
+          "alignment_fixed": {
+            "const": true
+          }
+        }
+      }
+    }
+  ]
+}

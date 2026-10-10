@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "pieces": [
+    {
+      "id": "piece_01",
+      "role": "development",
+      "audio": null,
+      "score": null,
+      "score_format": null,
+      "reference": "data/reference/piece_01.json",
+      "annotation": {
+        "completeness": "unknown",
+        "coverage": [],
+        "human_validated": false,
+        "alignment_fixed": false
+      },
+      "mapping": {
+        "35": "kick",
+        "36": "kick",
+        "38": "snare",
+        "40": "snare",
+        "42": "hi-hat",
+        "44": "hi-hat",
+        "46": "hi-hat",
+        "41": "toms",
+        "43": "toms",
+        "45": "toms",
+        "47": "toms",
+        "48": "toms",
+        "50": "toms",
+        "49": "cymbals",
+        "51": "cymbals",
+        "52": "cymbals",
+        "53": "cymbals",
+        "55": "cymbals",
+        "57": "cymbals",
+        "59": "cymbals"
+      },
+      "metadata": {
+        "pickup": null,
+        "swing": null,
+        "tempo_changes": [],
+        "time_signatures": []
+      }
+    },
+    {
+      "id": "piece_02",
+      "role": "control",
+      "audio": null,
+      "score": null,
+      "score_format": null,
+      "reference": "data/reference/piece_02.json",
+      "annotation": {
+        "completeness": "unknown",
+        "coverage": [],
+        "human_validated": false,
+        "alignment_fixed": false
+      },
+      "mapping": {
+        "35": "kick",
+        "36": "kick",
+        "38": "snare",
+        "40": "snare",
+        "42": "hi-hat",
+        "44": "hi-hat",
+        "46": "hi-hat",
+        "41": "toms",
+        "43": "toms",
+        "45": "toms",
+        "47": "toms",
+        "48": "toms",
+        "50": "toms",
+        "49": "cymbals",
+        "51": "cymbals",
+        "52": "cymbals",
+        "53": "cymbals",
+        "55": "cymbals",
+        "57": "cymbals",
+        "59": "cymbals"
+      },
+      "metadata": {
+        "pickup": null,
+        "swing": null,
+        "tempo_changes": [],
+        "time_signatures": []
+      }
+    }
+  ]
+}

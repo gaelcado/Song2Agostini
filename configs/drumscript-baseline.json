@@ -1,0 +1,8 @@
+[
+  {
+    "hypothesis": "Baseline alternative DrumScript DSP polyphonique sur mix original, paramètres amont inchangés, sans séparation ni poids appris ; grille commune estimée depuis le mix",
+    "engine": "drumscript",
+    "separate_drums": false,
+    "compact": true
+  }
+]

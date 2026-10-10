@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "tolerances_ms": [
+    50,
+    25
+  ],
+  "primary": "macro_f1_50ms",
+  "classes": [
+    "kick",
+    "snare",
+    "hi-hat",
+    "toms",
+    "cymbals"
+  ],
+  "matching": "maximum_cardinality_minimum_distance",
+  "coverage": "half_open_per_class",
+  "control_policy": "once_after_freeze",
+  "max_variants": 12,
+  "absence_policy": "real_coverage_requires_explicit_absence_evaluable; otherwise recall_only_and_precision_f1_null"
+}

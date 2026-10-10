@@ -1,0 +1,4 @@
+pyside6==6.8.3
+pyside6-addons==6.8.3
+pyside6-essentials==6.8.3
+shiboken6==6.8.3

@@ -1,0 +1,18 @@
+{
+  "adtof": {
+    "repository": "https://github.com/xavriley/ADTOF-pytorch.git",
+    "commit": "85c192e78f716ea0b111cc8a5ee4a8f6a3a4f8a9"
+  },
+  "allinone": {
+    "repository": "https://github.com/mir-aidj/all-in-one.git",
+    "commit": "18e78903c0365147a2c5d4e5e57ebf88cb7d800e"
+  },
+  "drumscript": {
+    "repository": "https://github.com/DrumScript/DrumScript.git",
+    "commit": "46244bda23196a3f4521c1d094f098fc72dad820"
+  },
+  "demucs": {
+    "version": "4.0.1",
+    "repository": "https://github.com/adefossez/demucs"
+  }
+}

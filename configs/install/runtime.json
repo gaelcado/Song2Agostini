@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "python": "3.11",
+  "environments": [
+    "app",
+    "adtof",
+    "demucs",
+    "beat_this"
+  ],
+  "repositories": {
+    "adtof": {
+      "url": "https://github.com/xavriley/ADTOF-pytorch.git",
+      "commit": "85c192e78f716ea0b111cc8a5ee4a8f6a3a4f8a9",
+      "weights_path": "src/adtof_pytorch/data/adtof_frame_rnn_pytorch_weights.pth",
+      "weights_sha256": "1bc986e596ec47ba0b44916f87cd4a39f0b2bec23596df3fb5d0e87749217320"
+    },
+    "beat_this": {
+      "url": "https://github.com/CPJKU/beat_this.git",
+      "commit": "b95c8ab0c58c2d9fcfd40508ae8dffbc05ac4f5c"
+    }
+  },
+  "weights": {
+    "demucs": {
+      "config": "configs/demucs-model.json",
+      "target": "models/demucs/955717e8-8726e21a.th"
+    },
+    "beat_this": {
+      "config": "configs/beat-this-model.json",
+      "target": "models/beat_this/final0.ckpt"
+    }
+  },
+  "licenses": {
+    "adtof": {
+      "code": "Port sans licence explicite; upstream CC-BY-NC-SA-4.0",
+      "weights": "Licence du port non explicitée; aucune redistribution",
+      "source": "https://github.com/xavriley/ADTOF-pytorch"
+    },
+    "demucs": {
+      "code": "MIT",
+      "weights": "Déclaration MIT générale du dépôt; pas de notice distincte trouvée",
+      "source": "https://github.com/adefossez/demucs/blob/main/LICENSE"
+    },
+    "beat_this": {
+      "code": "MIT",
+      "weights": "MIT selon README officiel",
+      "source": "https://github.com/CPJKU/beat_this#license"
+    }
+  },
+  "dependencies_policy": "Installation CPU torch/torchaudio 2.11.0 alignés; combinaison distincte des runs historiques (torch 2.14.1), nouvelle inférence à valider."
+}

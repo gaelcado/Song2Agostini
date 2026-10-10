@@ -1,0 +1,70 @@
+{
+  "corpus_id": "gmd-v1-ten-percussion-technical-cases",
+  "download_budget_bytes": 2500000000,
+  "source": {
+    "name": "Groove MIDI Dataset",
+    "version": "1.0.0",
+    "page_url": "https://magenta.withgoogle.com/datasets/groove",
+    "license": "CC-BY-4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/",
+    "attribution": "Google LLC; Jon Gillick, Adam Roberts, Jesse Engel, Douglas Eck, David Bamman. Learning to Groove with Inverse Sequence Transformations, ICML 2019. Dataset performers acknowledged on source page.",
+    "audio_archive_url": "https://storage.googleapis.com/magentadata/datasets/groove/groove-v1.0.0.zip",
+    "audio_archive_bytes": 5111599714,
+    "audio_object_generation": "1556582299849385",
+    "audio_archive_sha256_publisher": "21559feb2f1c96ca53988fd4d7060b1f2afe1d854fb2a8dcea5ff95cf3cce7e9",
+    "midi_archive_url": "https://storage.googleapis.com/magentadata/datasets/groove/groove-v1.0.0-midionly.zip",
+    "midi_archive_sha256": "651cbc524ffb891be1a3e46d89dc82a1cecb09a57c748c7b45b844c4841dcc1e"
+  },
+  "selection": [
+    {
+      "id": "tech_01",
+      "midi_member": "drummer1/session2/111_rock-prog_110_beat_5-4.mid",
+      "description": "Rock progressif ; métrique inhabituelle déclarée par la source"
+    },
+    {
+      "id": "tech_02",
+      "midi_member": "drummer5/session1/8_latin-venezuelan-merengue_162_beat_5-8.mid",
+      "description": "Merengue vénézuélien ; métrique inhabituelle déclarée par la source"
+    },
+    {
+      "id": "tech_03",
+      "midi_member": "drummer6/session1/5_rock_60_beat_6-8.mid",
+      "description": "Rock lent ; métrique composée déclarée par la source"
+    },
+    {
+      "id": "tech_04",
+      "midi_member": "drummer1/session2/1_latin-chacarera_157_beat_3-4.mid",
+      "description": "Chacarera ; métrique ternaire déclarée par la source"
+    },
+    {
+      "id": "tech_05",
+      "midi_member": "drummer10/session1/10_jazz-swing_110_beat_4-4.mid",
+      "description": "Jazz swing, étiquette fournie par le batteur"
+    },
+    {
+      "id": "tech_06",
+      "midi_member": "drummer1/session1/239_funk-purdieshuffle_130_beat_4-4.mid",
+      "description": "Funk Purdie shuffle, étiquette fournie par le batteur"
+    },
+    {
+      "id": "tech_07",
+      "midi_member": "drummer1/session1/201_reggae-slow_64_beat_4-4.mid",
+      "description": "Reggae lent, étiquette fournie par le batteur"
+    },
+    {
+      "id": "tech_08",
+      "midi_member": "drummer1/session2/62_punk_144_beat_4-4.mid",
+      "description": "Punk rapide, étiquette fournie par le batteur"
+    },
+    {
+      "id": "tech_09",
+      "midi_member": "drummer7/session1/17_hiphop_100_beat_4-4.mid",
+      "description": "Hip-hop, autre interprète"
+    },
+    {
+      "id": "tech_10",
+      "midi_member": "drummer1/session1/247_funk-purdieshuffle_130_fill_4-4.mid",
+      "description": "Fill court ; cas limite de durée, étiquette source"
+    }
+  ]
+}

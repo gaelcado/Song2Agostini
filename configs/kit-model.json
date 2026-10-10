@@ -1,0 +1,20 @@
+{
+  "repository": "Faridzar/timbrica-drum-separator",
+  "revision": "3b3475f9b84c676d05441e38b16ed5deaa74d582",
+  "weights_license": "CC-BY-NC-SA-4.0",
+  "runtime_license": "MIT (ONNX Runtime), separate from weights",
+  "experimental": true,
+  "samplerate": 44100,
+  "n_fft": 4096,
+  "hop_length": 1024,
+  "frequency_bins": 2048,
+  "chunk_frames": 512,
+  "centering": "reflect-pad n_fft/2; periodic Hann; unnormalized FFT",
+  "chunk_policy": "contiguous 512 frames; final magnitude zero-padded; discard padded output",
+  "nyquist_policy": "zero target Nyquist bin (not predicted)",
+  "mask_policy": "independent masks clipped to [0,1]; no Wiener redistribution",
+  "models": {
+    "kick": {"filename": "drums-kick-fp16.onnx", "sha256": "f3dd5b5e3b23dafaa41d401c90595bb8ea7f121424c3b90885d751e3e96cb0c7"},
+    "snare": {"filename": "drums-snare-r2-fp16.onnx", "sha256": "fc1706e740ff17e4c7fd4c487016bafc53d7500cad874c829d69e54682061f4f"}
+  }
+}

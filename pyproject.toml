@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+[project]
+name = "drum-lab"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = ["scipy", "jsonschema", "pretty-midi"]
+[project.optional-dependencies]
+review = ["verovio==6.3.0", "mido==1.3.3"]
+desktop = ["PySide6==6.8.3"]
+build = ["pyinstaller==6.16.0", "pyinstaller-hooks-contrib==2026.8"]
+[project.scripts]
+drum-lab = "drum_lab.cli:main"
+drum-lab-desktop = "drum_lab.desktop:main"
+[tool.setuptools.packages.find]
+where = ["src"]
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.setuptools.package-data]
+drum_lab = ["web/*"]
+
+[tool.setuptools.data-files]
+"share/drum-lab/configs" = ["configs/*.json", "configs/*.txt"]
+"share/drum-lab/configs/install" = ["configs/install/*.txt", "configs/install/*.json"]
+"share/drum-lab/scripts" = ["scripts/*worker.py", "scripts/estimate_grid.py"]
+"share/drum-lab/src/drum_lab" = ["src/drum_lab/*.py"]
