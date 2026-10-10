@@ -12,11 +12,11 @@ l'installation sur toutes les éditions du système.
 | Windows Server 2025 x64 | Python 3.11.9, 190 tests + imports/page HTTP/MIDI/XML réussis | PDF N/A sans MuseScore ; aucun test Windows client |
 | Windows 10 x64 | Non testé sur machine ou VM réelle | Ne pas annoncer support certifié |
 | Windows 11 x64 | Non testé sur machine ou VM réelle | Ne pas annoncer support certifié |
-| WSL Ubuntu 24.04 | Python 3.12.3, 187 tests et PDF réussis sur commit 2200a37 ; copie des preuves échouée, correction en cours | Noyau 4.4.0-20348-Microsoft ; mode WSL à confirmer, hôte Server 2022 |
+| WSL1 Ubuntu 24.04 | Python 3.12.3, 190 tests, validation audio, MIDI/XML/PDF réussis ; artefacts récupérés | Hôte Server 2022, noyau réel 4.4.0-20348-Microsoft ; WSL2 et clients 10/11 restent à tester |
 
 Preuves : [source quatre OS tous réussis, commit 7bbe025](https://github.com/gaelcado/Song2Agostini/actions/runs/38048392543),
 [preview Windows/macOS, commit 0a534ce](https://github.com/gaelcado/Song2Agostini/actions/runs/38047450886),
-[WSL tests/PDF réussis, copie des preuves échouée](https://github.com/gaelcado/Song2Agostini/actions/runs/38048216025),
+[WSL1 réussi, commit 764af67](https://github.com/gaelcado/Song2Agostini/actions/runs/38048594761),
 [runtimes CPU Linux et Windows, résultat obtenu](https://github.com/gaelcado/Song2Agostini/actions/runs/38047745411),
 [runtime Windows avec PDF et trois forwards réussis](https://github.com/gaelcado/Song2Agostini/actions/runs/38048409265).
 Le premier runtime Windows a exécuté ADTOF (16,375 s) et Beat This! (2,14 s),
@@ -59,8 +59,14 @@ Canonical puis teste le commit exact, les unitaires et un véritable export PDF.
 Ubuntu 24.04 utilise son Python 3.12 dans un venv ; la matrice native utilise
 Python 3.11. Le résultat WSL est distinct d'un résultat Ubuntu natif. Le numéro MSI 3.0.1
 est la version de l'application WSL ; le mode de la distribution (WSL1/WSL2)
-est établi par son noyau et, pour les prochains runs, `wsl --list --verbose`,
-jamais déduit du numéro MSI.
+est établi par `wsl --list --verbose`, jamais déduit du numéro MSI. Le run
+764af67 confirme Ubuntu-24.04 en version **1**, avec noyau réel
+`4.4.0-20348-Microsoft`. Le noyau 6.18 annoncé par `wsl --version` appartient
+à l’installation WSL et ne décrit pas cette distribution WSL1. WSL2 reste
+non testé. Les deux sorties sont conservées dans les artefacts, avec le noyau
+réel et `/etc/os-release`. La précédente étape de copie avait échoué sur la
+conversion du chemin Windows ; la conversion en séparateurs `/` a été validée
+par la récupération des preuves dans ce dernier run.
 
 `Build desktop preview` compile un exécutable Windows et un bundle/DMG macOS
 **de prévisualisation**, puis lance le binaire compilé avec `--smoke-test`

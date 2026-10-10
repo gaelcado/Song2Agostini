@@ -1,3 +1,11 @@
+## Vérifications finales de distribution
+
+190 tests logiciels réussis localement et sur les quatre runners (macOS 14, Ubuntu 22.04, Windows Server 2022/2025). Windows Server 2022 : export PDF natif MuseScore et forwards CPU ADTOF/Beat This/Demucs réussis ; validation d’entrée FFprobe N/A dans ce job. WSL1 Ubuntu 24.04 : 190 tests et validation audio/MIDI/XML/PDF réussis, artefacts récupérés. Windows 10/11 et WSL2 n’ont pas été testés. Preuves et URLs : docs/platform-support.md.
+
+Les scripts des références et la vue privée sont sous lab/ ; la racine décrit uniquement le produit et l’installation. Le dépôt public ne contient ni musiques, ni références, ni poids, ni binaires tiers. Historique Git local ancien conservé sur master ; main public démarre d’un snapshot source audité. Installation neuve CPU PyTorch/torchaudio 2.11.0 distincte des workers privés gelés depuis les environnements historiques : aucune équivalence musicale inventée. Les caches identifient désormais leur runtime réel, et une grille historique sans identité n’est pas réutilisée avec un runtime installé nouveau.
+
+MuseScore doit être copié physiquement en conservant sa distribution/signature officielle ; le prototype a révélé des ressources altérées dans une copie précédente. Copie fraîche restaurée côté source et payload. Le test autonome Mac réel est suivi séparément dans docs/packaging.md ; les erreurs de construction et rendus sont conservées. Les droits de redistribution ADTOF-port et les notices complètes tiers bloquent encore une release publique de binaires complets. Fidélité musicale N/A ; aucun nouveau réglage ni accès aux feuilles manuelles pendant cette phase.
+
 ## Distribution — 10 octobre 2026
 
 README/INSTALL/AGENTS/CLAUDE/STATUS à la racine simplifiés pour les musiciens et leurs agents. Scripts des références et ancienne vue déplacés sous lab/ ; les originaux et runs sont préservés. Licence MIT pour le code propre ; notices tiers distinctes. Publication limitée aux sources, aucun audio/référence/poids.
