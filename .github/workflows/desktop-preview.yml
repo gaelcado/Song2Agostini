@@ -38,7 +38,7 @@ jobs:
         with:
           name: desktop-preview-${{ matrix.os }}
           path: |
-            dist/Song2AgostiniPreview*
+            dist/Song2AgostiniPreview-build.json
             work/desktop-preview.png
           if-no-files-found: error
           retention-days: 14

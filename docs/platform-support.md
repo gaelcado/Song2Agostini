@@ -43,7 +43,10 @@ Python 3.11. Le résultat WSL est distinct d'un résultat Ubuntu natif.
 
 `Build desktop preview` compile un exécutable Windows et un bundle/DMG macOS
 **de prévisualisation**, puis lance le binaire compilé avec `--smoke-test`
-(fenêtre, chargement HTTP et éléments DOM, capture PNG). Ces artefacts ne contiennent pas les runtimes moteurs
+(fenêtre, chargement HTTP et éléments DOM, capture PNG). Les artefacts publics contiennent uniquement la preuve de build JSON et la
+capture PNG ; aucun binaire Qt ni bundle desktop n’est publié en attendant
+la vérification des notices et sources de ses dépendances. Ces builds de test
+ne contiennent pas les runtimes moteurs
 ni les modèles : ils ne constituent pas la distribution autonome complète.
 
 `Full CPU runtime smoke`, manuel et limité à 60 minutes par OS, télécharge les

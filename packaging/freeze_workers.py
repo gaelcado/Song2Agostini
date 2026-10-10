@@ -24,7 +24,7 @@ def main(argv=None):
         if not python.is_file():
             raise FileNotFoundError(python)
         subprocess.run(["uv", "pip", "install", "--python", str(python), "pyinstaller==6.16.0",
-                        "pyinstaller-hooks-contrib==2026.8"], check=True)
+                        "pyinstaller-hooks-contrib==2026.8", "backports.tarfile==1.2.0"], check=True)
         build = ROOT / "work" / "worker-build" / engine
         build.mkdir(parents=True, exist_ok=True)
         command = [str(python), "-m", "PyInstaller", "--noconfirm", "--clean", "--onedir",
