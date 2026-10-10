@@ -66,7 +66,7 @@ def main():
     download('https://raw.githubusercontent.com/adefossez/demucs/main/LICENSE',notices/'demucs/LICENSE')
     (notices/'beat_this').mkdir(parents=True,exist_ok=True)
     shutil.copy2(ROOT/'work/release-smoke/runtime/vendor/beat_this/LICENSE',notices/'beat_this/LICENSE')
-    download('https://raw.githubusercontent.com/musescore/MuseScore/v4.7.5/LICENSE.txt',notices/'musescore/LICENSE.txt')
+    download('https://raw.githubusercontent.com/musescore/MuseScore/v4.6.5/LICENSE.txt',notices/'musescore/LICENSE.txt')
     shutil.copy2(original/'Contents/Resources/sound/MS Basic_License.md',notices/'musescore/MS Basic_License.md')
     ffmpeg_source=Path('/opt/homebrew/Cellar/ffmpeg/8.0.1_2')
     (notices/'ffmpeg').mkdir(parents=True,exist_ok=True)
@@ -87,7 +87,7 @@ def main():
                 'Sources correspondantes complètes du build et bibliothèques tierces non assemblées.'),
       'ffprobe':('https://ffmpeg.org/releases/ffmpeg-8.0.1.tar.xz','Homebrew ffmpeg 8.0.1_2',
                  'Sources correspondantes complètes du build et bibliothèques tierces non assemblées.'),
-      'musescore':('https://github.com/musescore/MuseScore/tree/v4.7.5','4.7.5.260831071',
+      'musescore':('https://github.com/musescore/MuseScore/tree/v4.6.5','4.6.5.253511702',
                    'Source amont liée; correspondance exacte build, patches et dépendances non reconstituée.')}
     for name,(url,revision,note) in provenance.items():
         textfile(sources/name/'README.txt',f'Composant : {name}\nSource amont : {url}\nRévision : {revision}\n{note}\n'

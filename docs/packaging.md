@@ -46,6 +46,14 @@ dist/Song2Agostini.app/Contents/MacOS/Song2Agostini --smoke-test \
   --smoke-audio /chemin/absolu/test.wav --smoke-output /chemin/absolu/test-sorties
 ```
 
+Après un test complet réussi, empaqueter le bundle inchangé et sa preuve externe sans refaire le freeze :
+
+```sh
+.venv/bin/python packaging/package_existing_dmg.py --smoke-report /chemin/test-sorties/desktop-smoke.json
+```
+
+Le script vérifie les sorties et leurs hashes, la signature du bundle et le rapport de génération audio seule. Il ajoute la preuve externe à la DMG ; le manifeste embarqué conserve honnêtement son statut de candidat avant test. Le renderer macOS est épinglé à MuseScore 4.6.5 après des arrêts natifs répétés de 4.7.5.
+
 Répéter depuis un dossier hors projet, avec `PATH` limité aux outils système, les variables de runtime héritées effacées et un dossier utilisateur temporaire. Le test logiciel n’est pas une mesure de fidélité musicale.
 
 ## Licences et validation avant diffusion

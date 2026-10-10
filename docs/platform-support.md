@@ -6,7 +6,7 @@ l'installation sur toutes les éditions du système.
 
 | Cible | Preuve au 10 octobre 2026 | Limite |
 | --- | --- | --- |
-| macOS Apple Silicon | Source locale Python 3.11.14, MIDI/XML/PDF ; runner macOS 14 Python 3.11.9, 190 tests et smoke installée réussis | PDF runner N/A (MuseScore absent), renderer local parfois SIGABRT |
+| macOS Apple Silicon | Source locale Python 3.11.14, MIDI/XML/PDF ; runner macOS 14 Python 3.11.9, 190 tests et smoke installée réussis | PDF runner N/A (MuseScore absent). Application autonome arm64 : morceau réel → PDF/XML/MIDI réussi avec MuseScore 4.6.5 ; 4.7.5 local instable (SIGABRT) |
 | Linux Ubuntu 22.04 | Python 3.11.17, 190 tests réussis et vrais exports MIDI/XML/PDF CI | MuseScore 3 : correction de l’option `--no-audio` validée |
 | Windows Server 2022 x64 | Python 3.11.9, 190 tests + imports/page HTTP/MIDI/XML ; preview `.exe` compilée et lancée, capture contrôlée | PDF natif MuseScore 4.7.5 et trois forwards CPU réussis ; FFprobe absent, audio validation N/A |
 | Windows Server 2025 x64 | Python 3.11.9, 190 tests + imports/page HTTP/MIDI/XML réussis | PDF N/A sans MuseScore ; aucun test Windows client |

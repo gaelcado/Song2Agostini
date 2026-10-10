@@ -8,7 +8,7 @@ La licence MIT du dépôt couvre le code propre à Song2Agostini. Elle ne rempla
 | [ADTOF original](https://github.com/MZehren/ADTOF/blob/master/LICENSE) | Origine du modèle | CC BY-NC-SA 4.0 ; restriction non commerciale. Cela ne fournit pas automatiquement une licence aux ajouts du port PyTorch. |
 | [Demucs](https://github.com/adefossez/demucs/blob/main/LICENSE) | Isolation de batterie | Code MIT. Les poids sont fournis par le projet ; aucune déclaration distincte des poids n’a été identifiée dans l’audit local. Garder cette distinction pour une distribution. |
 | [Beat This](https://github.com/CPJKU/beat_this#license) | Temps et premiers temps | MIT annoncé pour code et poids. |
-| [MuseScore](https://github.com/MuseScore/MuseScore/blob/v4.7.5/LICENSE.txt) | Export PDF | GPL-3.0 ; garder les notices et respecter les obligations de distribution et d’accès aux sources correspondantes. |
+| [MuseScore 4.6.5](https://github.com/MuseScore/MuseScore/blob/v4.6.5/LICENSE.txt) / [4.7.5](https://github.com/MuseScore/MuseScore/blob/v4.7.5/LICENSE.txt) | Export PDF (Mac : 4.6.5 ; validation Windows : 4.7.5) | GPL-3.0 ; garder les notices et respecter les obligations de distribution et d’accès aux sources correspondantes. |
 | [Qt for Python / PySide6](https://doc.qt.io/qtforpython-6/licenses.html) | Fenêtre native | LGPLv3/GPLv3 ou licence commerciale selon composants. QtWebEngine inclut aussi des dépendances tierces. |
 | [FFmpeg](https://ffmpeg.org/legal.html) | Lecture et conversion audio | LGPL ou GPL selon la configuration du binaire. Vérifier chaque build embarqué, garder notices et sources correspondantes. |
 
