@@ -1,3 +1,9 @@
+## Lecteur PDF du bundle corrigé — 10 octobre 2026
+
+Le panneau gris est reproduit avec les restrictions réelles de la fenêtre native : l’intercepteur bloquait les modules internes `chrome://resources/` importés par le lecteur PDF Chromium. Le test visuel précédent utilisait un profil sans cet intercepteur et ne couvrait donc pas ce défaut. Correction `854e3a2` : autorisation de cet hôte interne précis, sans autoriser les autres hôtes ni les requêtes réseau externes. 29 tests ciblés passent, dont les régressions sur la politique de ressources.
+
+Bundle `dist/Song2Agostini.app` reconstruit, signature profonde stricte vérifiée, source desktop embarquée identique. Vérification réelle via l’interface native du binaire : sélection de `piece_02.mp3`, génération terminée (`d161f3f60e3547f2a3e9b0d19cb7f34f`), PDF de quatre pages visible, défilement dans le lecteur de la page 1 à la page 2 et défilement extérieur de la fenêtre réussis sans cliquer les barres. Application laissée ouverte. Logs de reproduction et capture locale : `work/pdf-viewer-debug/`. L’ancienne DMG reste inchangée ; ouvrir le bundle corrigé.
+
 ## Application reconstruite et lancée — 10 octobre 2026
 
 Bundle natif macOS Apple Silicon reconstruit depuis `cfdb979` avec le runtime local complet : `dist/Song2Agostini.app`. Commande : `.venv/bin/python packaging/build_desktop.py --runtime-payload work/desktop-runtime`. Signature vérifiée avec `codesign --verify --deep --strict` ; JavaScript embarqué identique aux sources.
