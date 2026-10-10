@@ -11,6 +11,17 @@ jobs:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           persist-credentials: false
+      - name: Update WSL from verified Microsoft MSI (no winget dependency)
+        shell: pwsh
+        run: |
+          $installer = Join-Path $env:RUNNER_TEMP 'wsl.3.0.1.0.x64.msi'
+          Invoke-WebRequest -Uri 'https://github.com/microsoft/WSL/releases/download/3.0.1/wsl.3.0.1.0.x64.msi' -OutFile $installer
+          $expected = '28b1a0d013640a2ac95898ea705fa186e5b4ff767a1c1b49257161bc106599c6'
+          if ((Get-FileHash $installer -Algorithm SHA256).Hash.ToLower() -ne $expected) { throw 'WSL MSI SHA256 mismatch' }
+          $process = Start-Process msiexec.exe -ArgumentList '/i', $installer, '/qn', '/norestart' -Wait -PassThru
+          if ($process.ExitCode -ne 0) { throw "WSL installer exit $($process.ExitCode); runner cannot reboot" }
+          wsl.exe --version
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Install Ubuntu WSL (Canonical action, MIT)
         uses: Ubuntu/WSL/.github/actions/wsl-install@3b7a6b2a43af18aa541eeee1669ac27656630097
         with:

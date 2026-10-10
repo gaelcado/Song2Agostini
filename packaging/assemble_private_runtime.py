@@ -98,8 +98,26 @@ def main():
         shutil.copy2(ROOT/'packaging'/name,recipes/name)
     shutil.copy2(ffmpeg_source/'INSTALL_RECEIPT.json',sources/'ffmpeg/INSTALL_RECEIPT.json')
     # Preserve declarations separately from actual license texts.
+    (notices/'installed-distribution-declarations.json').unlink(missing_ok=True)
     metadata=ROOT/'work/release-smoke/runtime/runtime-install.json'
-    if metadata.exists(): shutil.copy2(metadata,notices/'installed-distribution-declarations.json')
+    if metadata.exists():
+        textfile(notices/'source-bootstrap-declarations.json',json.dumps({'scope':'separate_source_installation_not_frozen_worker_environment','data':json.loads(metadata.read_text())},ensure_ascii=False,indent=2))
+    metadata_code="import importlib.metadata as m,json; print(json.dumps([{'name':d.metadata.get('Name'),'version':d.version,'license_expression':d.metadata.get('License-Expression'),'license_declaration':d.metadata.get('License'),'license_files':[str(d.locate_file(f)) for f in (d.files or []) if 'license' in str(f).lower() or 'copying' in str(f).lower()],'status':'metadata_declaration_only'} for d in m.distributions()]))"
+    for engine in ('adtof','demucs','beat_this'):
+        buildfile=RUNTIME/'workers'/engine/'build.json'
+        environment_python=Path(json.loads(buildfile.read_text())['command'][0]) if buildfile.exists() else ROOT/'work/envs'/engine/'bin/python'
+        declarations=json.loads(subprocess.check_output([str(environment_python),'-c',metadata_code],text=True))
+        copied=[]
+        for distribution in declarations:
+            name=distribution['name'] or 'unknown'
+            for index,source_file in enumerate(distribution['license_files']):
+                notice_source=Path(source_file)
+                if notice_source.is_file():
+                    destination=notices/engine/'dependencies'/name/(str(index)+'-'+notice_source.name)
+                    destination.parent.mkdir(parents=True,exist_ok=True)
+                    shutil.copy2(notice_source,destination)
+                    copied.append(str(destination.relative_to(RUNTIME)))
+        textfile(notices/engine/'build-environment-declarations.json',json.dumps({'scope':'actual_frozen_worker_build_environment','python':str(environment_python),'declarations':declarations,'copied_notice_files':copied,'redistribution_approved':False},ensure_ascii=False,indent=2))
     entries={}
     for name in ('adtof','demucs','beat_this','ffmpeg','ffprobe','musescore'):
         if name in ('adtof','demucs','beat_this'):

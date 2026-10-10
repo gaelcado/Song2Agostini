@@ -17,6 +17,12 @@ import urllib.request
 
 SOURCE = Path(__file__).resolve().parents[1]
 
+def configure_output():
+    # Windows shells may default to cp1252; all diagnostic files are UTF-8.
+    for stream in (sys.stdout,sys.stderr):
+        if hasattr(stream,'reconfigure'):
+            stream.reconfigure(encoding='utf-8',errors='backslashreplace')
+
 def sha256(path):
     h = hashlib.sha256()
     with Path(path).open('rb') as f:
@@ -100,6 +106,7 @@ def doctor(source, runtime, engines, config, desktop=False):
     return report
 
 def main():
+    configure_output()
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--source-root',type=Path,default=SOURCE)
     parser.add_argument('--runtime-root',type=Path)

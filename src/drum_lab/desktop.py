@@ -48,18 +48,20 @@ def main(argv=None):
             url = info.requestUrl()
             allowed = (url.scheme() == "http" and url.host() == "127.0.0.1"
                        and url.port() == server.server_port)
-            if not allowed and url.scheme() not in {"data", "blob", "about"}:
+            if not allowed and url.scheme() not in {"data", "blob", "about", "qrc", "chrome-extension"}:
                 info.block(True)
 
     profile = QWebEngineProfile(qt)  # in-memory cookies, no permanent user profile
     interceptor = LocalOnly(profile)
     profile.setUrlRequestInterceptor(interceptor)
     profile.settings().setAttribute(profile.settings().WebAttribute.PdfViewerEnabled, True)
+    profile.settings().setAttribute(profile.settings().WebAttribute.PluginsEnabled, True)
     windows = []
 
     class Page(QWebEnginePage):
         def acceptNavigationRequest(self, url, navigation_type, is_main_frame):
-            return url.toString().startswith(origin + "/") or url.toString() == "about:blank"
+            return (url.toString().startswith(origin + "/") or url.toString() == "about:blank"
+                    or url.scheme() in {"qrc", "chrome-extension"})
 
         def createWindow(self, window_type):
             child = create_window("Partition de batterie")

@@ -4,6 +4,9 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "drum-lab"
 version = "0.1.0"
+description = "Local audio-to-drum-sheet desktop app with French Agostini-style notation"
+readme = "README.md"
+license = {file = "LICENSE"}
 requires-python = ">=3.11"
 dependencies = ["scipy", "jsonschema", "pretty-midi"]
 [project.optional-dependencies]

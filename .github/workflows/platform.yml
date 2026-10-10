@@ -27,7 +27,7 @@ jobs:
         run: python scripts/bootstrap.py --only app --runtime-root work/ci-runtime
       - name: Select isolated app interpreter
         run: |
-          python -c "import os; from pathlib import Path; p=Path('work/ci-runtime/envs/app') / ('Scripts/python.exe' if os.name=='nt' else 'bin/python'); open(os.environ['GITHUB_ENV'], 'a').write('APP_PYTHON='+p.resolve().as_posix()+'\n')"
+          python -c "import os; from pathlib import Path; p=Path('work/ci-runtime/envs/app') / ('Scripts/python.exe' if os.name=='nt' else 'bin/python'); open(os.environ['GITHUB_ENV'], 'a').write('APP_PYTHON='+p.absolute().as_posix()+'\n')"
       - name: Install test dependencies in isolated app
         run: '"$APP_PYTHON" -m pip install pytest==8.4.2'
       - name: Check installed app

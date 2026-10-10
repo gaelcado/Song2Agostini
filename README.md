@@ -6,6 +6,8 @@ La fenêtre de l’application utilise votre ordinateur pour isoler la batterie 
 
 La partition reste un **brouillon à relire par un musicien**. La reconnaissance des instruments, les premiers temps et les rythmes complexes peuvent encore comporter des erreurs. Le projet n’est pas affilié aux éditions Agostini.
 
+![Fenêtre native de Song2Agostini](docs/assets/application.png)
+
 ## Installer et ouvrir
 
 Suivez [INSTALL.md](INSTALL.md). L’installation depuis les sources utilise Python 3.11 et des environnements séparés. FFmpeg et MuseScore sont nécessaires pour produire les partitions PDF.

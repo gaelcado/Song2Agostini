@@ -29,3 +29,15 @@ def test_absent_runtime_is_not_ready(tmp_path):
     result=installer.doctor(SCRIPT.parents[1],tmp_path,['app'],config)
     assert not result['ready']
     assert not result['engines']['app']['installed']
+
+
+def test_windows_cp1252_console_outputs_utf8_diagnostic(tmp_path):
+    import os
+    code=("import importlib.util,sys; from pathlib import Path; "
+          "s=importlib.util.spec_from_file_location('installer',sys.argv[1]); "
+          "m=importlib.util.module_from_spec(s); s.loader.exec_module(m); "
+          "m.configure_output(); m.execute([sys.executable,'-c','print(1)'],Path(sys.argv[2]))")
+    run=subprocess.run([sys.executable,'-c',code,str(SCRIPT),str(tmp_path/'log')],capture_output=True,env={**os.environ,'PYTHONIOENCODING':'cp1252'})
+    assert run.returncode==0,run.stderr.decode('utf-8')
+    assert '→' in run.stdout.decode('utf-8')
+    assert (tmp_path/'log').read_text()=='1\n'

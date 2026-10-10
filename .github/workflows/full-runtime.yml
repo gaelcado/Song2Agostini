@@ -28,7 +28,7 @@ jobs:
         run: python scripts/bootstrap.py --only all --runtime-root work/full-ci --allow-missing-tools
       - name: Select isolated app interpreter
         run: |
-          python -c "import os; from pathlib import Path; p=Path('work/full-ci/envs/app') / ('Scripts/python.exe' if os.name=='nt' else 'bin/python'); open(os.environ['GITHUB_ENV'], 'a').write('APP_PYTHON='+p.resolve().as_posix()+'\n')"
+          python -c "import os; from pathlib import Path; p=Path('work/full-ci/envs/app') / ('Scripts/python.exe' if os.name=='nt' else 'bin/python'); open(os.environ['GITHUB_ENV'], 'a').write('APP_PYTHON='+p.absolute().as_posix()+'\n')"
       - name: Generate artificial audio and test exports
         run: '"$APP_PYTHON" scripts/platform_smoke.py'
       - name: Real CPU forwards on artificial audio
