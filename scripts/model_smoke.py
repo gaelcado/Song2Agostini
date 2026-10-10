@@ -1,5 +1,7 @@
 """Bounded real CPU forwards on artificial audio; no fidelity claim/reference."""
 import argparse
+import datetime
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -18,16 +20,37 @@ def main():
     runtime, audio, out = args.runtime_root.resolve(), args.audio.resolve(), args.out.resolve()
     out.mkdir(parents=True, exist_ok=True)
     env = dict(os.environ, DRUM_LAB_RUNTIME_ROOT=str(runtime), DRUM_LAB_RESOURCE_ROOT=str(root))
-    report = {'synthetic': True, 'benchmark': False, 'fidelity': None, 'engines': {}}
+    report_path = out / 'report.json'
+    report_path.unlink(missing_ok=True)
+    report = {'synthetic': True, 'benchmark': False, 'fidelity': None,
+              'created_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+              'audio_sha256': hashlib.sha256(audio.read_bytes()).hexdigest(),
+              'source_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+              'engines': {}}
+    def save():
+        report_path.write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
     def run(engine, arguments):
         py = runtime / 'envs' / engine / ('Scripts/python.exe' if os.name == 'nt' else 'bin/python')
         started = time.monotonic()
-        with (out / f'{engine}.log').open('w', encoding='utf-8') as log:
-            subprocess.run([str(py), *arguments], env=env, check=True, stdout=log,
-                           stderr=subprocess.STDOUT, timeout=600)
-        report['engines'][engine] = {'forward': 'passed', 'duration_seconds': time.monotonic() - started}
+        command = [str(py), *arguments]
+        report['engines'][engine] = {'forward': 'running', 'command': command}
+        save()
+        try:
+            with (out / f'{engine}.log').open('w', encoding='utf-8') as log:
+                subprocess.run(command, env=env, check=True, stdout=log,
+                               stderr=subprocess.STDOUT, timeout=600)
+        except (subprocess.SubprocessError, OSError) as error:
+            report['engines'][engine].update(forward='failed', error=type(error).__name__)
+            raise
+        else:
+            report['engines'][engine]['forward'] = 'passed'
+        finally:
+            report['engines'][engine]['duration_seconds'] = time.monotonic() - started
+            save()
     adtof = out / 'adtof'
     adtof.mkdir(exist_ok=True)
+    # Every smoke must execute the forward, including repeated local checks.
+    (adtof / 'activations.npy').unlink(missing_ok=True)
     run('adtof', [str(root / 'scripts/adtof_worker.py'), str(audio), str(adtof / 'activations.npy'),
                   str(adtof), 'synthetic', 'null', 'True'])
     # Test model tensors even when no beat/downbeat is detectable on a fixture.
@@ -49,7 +72,7 @@ print("finite logits", beat.shape, downbeat.shape)
                        str(runtime / 'models/demucs/955717e8-8726e21a.th')])
     else:
         report['engines']['demucs'] = {'forward': 'N/A', 'reason': 'ffmpeg absent; import checked by bootstrap'}
-    (out / 'report.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
+    save()
     print(json.dumps(report, indent=2))
 
 

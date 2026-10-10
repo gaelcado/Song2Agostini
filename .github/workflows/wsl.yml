@@ -47,7 +47,10 @@ jobs:
       - name: Copy synthetic evidence to Windows workspace
         shell: pwsh
         run: |
-          $destination = (wsl.exe -d Ubuntu-24.04 -- wslpath -u "$env:GITHUB_WORKSPACE").Trim()
+          $windowsWorkspace = $env:GITHUB_WORKSPACE.Replace('\', '/')
+          $convertedPath = wsl.exe -d Ubuntu-24.04 -- wslpath -u $windowsWorkspace
+          if ($LASTEXITCODE -ne 0 -or -not $convertedPath) { throw 'WSL workspace path conversion failed' }
+          $destination = ($convertedPath | Out-String).Trim()
           wsl.exe -d Ubuntu-24.04 -- cp -r /tmp/atelier-batterie/work/platform-smoke "$destination/wsl-evidence"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           $env:WSL_UTF8 = '1'

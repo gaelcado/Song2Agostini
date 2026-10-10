@@ -6,19 +6,19 @@ l'installation sur toutes les éditions du système.
 
 | Cible | Preuve au 10 octobre 2026 | Limite |
 | --- | --- | --- |
-| macOS Apple Silicon | Source locale Python 3.11.14, MIDI/XML/PDF ; runner macOS 14 Python 3.11.9, 185 tests et smoke installée réussis | PDF runner N/A (MuseScore absent), renderer local parfois SIGABRT |
-| Linux Ubuntu 22.04 | Python 3.11.17, 185 tests réussis et vrais exports MIDI/XML/PDF CI | MuseScore 3 : correction de l’option `--no-audio` validée |
-| Windows Server 2022 x64 | Python 3.11.9, 185 tests + imports/page HTTP/MIDI/XML ; preview `.exe` compilée et lancée, capture contrôlée | PDF initial N/A sans MuseScore ; premier essai MSI 4.7.5 en timeout 180 s, backend natif corrigé à vérifier |
-| Windows Server 2025 x64 | Python 3.11.9, 185 tests + imports/page HTTP/MIDI/XML réussis | PDF N/A sans MuseScore ; aucun test Windows client |
+| macOS Apple Silicon | Source locale Python 3.11.14, MIDI/XML/PDF ; runner macOS 14 Python 3.11.9, 190 tests et smoke installée réussis | PDF runner N/A (MuseScore absent), renderer local parfois SIGABRT |
+| Linux Ubuntu 22.04 | Python 3.11.17, 190 tests réussis et vrais exports MIDI/XML/PDF CI | MuseScore 3 : correction de l’option `--no-audio` validée |
+| Windows Server 2022 x64 | Python 3.11.9, 190 tests + imports/page HTTP/MIDI/XML ; preview `.exe` compilée et lancée, capture contrôlée | PDF initial N/A sans MuseScore ; premier essai MSI 4.7.5 en timeout 180 s, backend natif corrigé à vérifier |
+| Windows Server 2025 x64 | Python 3.11.9, 190 tests + imports/page HTTP/MIDI/XML réussis | PDF N/A sans MuseScore ; aucun test Windows client |
 | Windows 10 x64 | Non testé sur machine ou VM réelle | Ne pas annoncer support certifié |
 | Windows 11 x64 | Non testé sur machine ou VM réelle | Ne pas annoncer support certifié |
-| WSL Ubuntu 24.04 | Premier essai en échec (winget absent/ancien WSL) ; MSI Microsoft vérifié ajouté, second essai en cours | Hôte Server 2022 ; WSL Windows 10/11 client reste à tester |
+| WSL Ubuntu 24.04 | Python 3.12.3, 187 tests et PDF réussis sur commit 2200a37 ; copie des preuves échouée, correction en cours | Noyau 4.4.0-20348-Microsoft ; mode WSL à confirmer, hôte Server 2022 |
 
-Preuves : [source quatre OS tous réussis, commit 866733c](https://github.com/gaelcado/Song2Agostini/actions/runs/38047686366),
+Preuves : [source quatre OS tous réussis, commit 7bbe025](https://github.com/gaelcado/Song2Agostini/actions/runs/38048392543),
 [preview Windows/macOS, commit 0a534ce](https://github.com/gaelcado/Song2Agostini/actions/runs/38047450886),
-[WSL corrigé, en cours](https://github.com/gaelcado/Song2Agostini/actions/runs/38047849208),
+[WSL tests/PDF réussis, copie des preuves échouée](https://github.com/gaelcado/Song2Agostini/actions/runs/38048216025),
 [runtimes CPU Linux et Windows, résultat obtenu](https://github.com/gaelcado/Song2Agostini/actions/runs/38047745411),
-[runtime Windows avec FFmpeg/MuseScore, en cours](https://github.com/gaelcado/Song2Agostini/actions/runs/38047854237).
+[runtime Windows avec backend Qt natif, en cours](https://github.com/gaelcado/Song2Agostini/actions/runs/38048409265).
 Le premier runtime Windows a exécuté ADTOF (16,375 s) et Beat This! (2,14 s),
 avec Demucs N/A faute de FFmpeg ; cette preuve partielle est
 [conservée distinctement](https://github.com/gaelcado/Song2Agostini/actions/runs/38047523936).
