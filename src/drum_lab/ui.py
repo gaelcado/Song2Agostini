@@ -16,6 +16,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlsplit, quote
 from .titles import audio_title
 from .files import find_tool
+from .processes import run_external
 
 MAX_BYTES = 200 * 1024 * 1024
 MAX_DURATION = 30 * 60
@@ -33,7 +34,7 @@ def validate_audio(path: Path) -> None:
     ffprobe = find_tool("ffprobe")
     if not ffprobe:
         raise RuntimeError("ffprobe indisponible")
-    result = subprocess.run(
+    result = run_external(
         [ffprobe, "-v", "error", "-show_entries", "format=duration:stream=codec_type",
          "-of", "json", str(path)], capture_output=True, text=True, timeout=30,
         check=True,
@@ -70,7 +71,7 @@ def render_preview(pdf: Path, output: Path) -> Path:
         document.close()
         return preview
     prefix = output / "preview-page-1"
-    subprocess.run([executable, "-f", "1", "-l", "1", "-scale-to", "1400",
+    run_external([executable, "-f", "1", "-l", "1", "-scale-to", "1400",
                     "-png", "-singlefile", str(pdf), str(prefix)],
                    check=True, capture_output=True, timeout=60)
     preview = prefix.with_suffix(".png")

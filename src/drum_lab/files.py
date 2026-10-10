@@ -102,6 +102,31 @@ def worker_environment():
     return env
 
 
+def runtime_identity(environment):
+    """Fingerprint the runtime actually used, without consulting musical references."""
+    base = runtime_root()
+    manifest = next((base/name for name in ('distribution-manifest.json', 'runtime-install.json')
+                     if (base/name).is_file()), None)
+    identity = {'environment': environment}
+    if manifest:
+        identity['manifest_sha256'] = digest(manifest)
+        identity['manifest_kind'] = manifest.name
+    build = base/'workers'/environment/'build.json'
+    if build.is_file():
+        identity['frozen_build_sha256'] = digest(build)
+        identity['executable_sha256'] = digest(env_python(environment))
+    if not manifest and not build.is_file():
+        code = ("import importlib.metadata as m,json; "
+                "print(json.dumps(sorted((d.metadata.get('Name'),d.version) for d in m.distributions())))")
+        result = run_external([str(env_python(environment)), '-c', code], check=True,
+                              capture_output=True, text=True, timeout=60, env=worker_environment())
+        # All installed versions matter; an optional installer change may conservatively miss a cache.
+        versions = json.loads(result.stdout.strip().splitlines()[-1])
+        identity['installed_distributions_sha256'] = hashlib.sha256(
+            json.dumps(versions, sort_keys=True).encode('utf-8')).hexdigest()
+    return identity
+
+
 def installed_package_path(environment, package, *, weights=False):
     """Ask the isolated interpreter; wheels/editable installs differ across platforms."""
     code = (f'import {package} as package; print(package.get_default_weights_path())' if weights else

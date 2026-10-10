@@ -61,12 +61,23 @@ def main(argv=None):
                "--hidden-import", "drum_lab.pipeline", "--hidden-import", "PySide6.QtWebEngineWidgets"]
     for directory in ("configs", "scripts", "src"):
         command.extend(["--add-data", f"{ROOT / directory}:source/{directory}"])
-    if args.runtime_payload:
-        command.extend(["--add-data", f"{args.runtime_payload.resolve()}:runtime"])
+    # Frozen workers and MuseScore already own independent library trees.
+    # Passing them as --add-data makes PyInstaller rewrite nested Mach-O paths
+    # and mix their Qt libraries into the desktop's Qt runtime.
     if sys.platform == "darwin":
         command.extend(["--osx-bundle-identifier", "org.drumlab.song2agostini"])
     command.append(str(ROOT / "packaging" / "desktop_entry.py"))
     subprocess.run(command, cwd=ROOT, check=True)
+    if args.runtime_payload:
+        if sys.platform == "darwin":
+            app_bundle = ROOT / "dist" / f"{name}.app"
+            runtime_destination = app_bundle / "Contents" / "Resources" / "runtime"
+        else:
+            runtime_destination = ROOT / "dist" / name / "_internal" / "runtime"
+        shutil.copytree(args.runtime_payload.resolve(), runtime_destination, symlinks=True)
+        if sys.platform == "darwin":
+            (app_bundle / "Contents" / "Frameworks" / "runtime").symlink_to("../Resources/runtime")
+            subprocess.run(["codesign", "--force", "--sign", "-", str(app_bundle)], check=True)
     if sys.platform == "darwin":
         # BUNDLE already contains COLLECT; retain only the app to bound disk use.
         collected = ROOT / "dist" / name

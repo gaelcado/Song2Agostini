@@ -49,6 +49,7 @@ def test_grid_cache_checks_audio_and_never_reads_reference_path(tmp_path,monkeyp
     import drum_lab.pipeline as module
     monkeypatch.setattr(module,'ROOT',tmp_path)
     monkeypatch.setattr(module,'resource_path',lambda relative:tmp_path/relative)
+    monkeypatch.setattr(module,'runtime_identity',lambda name:{'environment':name})
     audio=tmp_path/'audio.mp3';audio.write_bytes(b'audio')
     private=tmp_path/'data/reference/grid.json'
     with pytest.raises(ValueError,match='run audio'):
@@ -64,4 +65,12 @@ def test_grid_cache_checks_audio_and_never_reads_reference_path(tmp_path,monkeyp
     value['audio_sha256']=module.digest(audio);cache.write_text(json.dumps(value))
     result=module.cached_model_grid(audio,cache,tmp_path/'out.json')
     assert result['cache_provenance']['sha256']==module.digest(cache)
+    monkeypatch.setattr(module,'runtime_identity',lambda name:{'environment':name,'manifest_sha256':'new_install'})
+    with pytest.raises(ValueError,match='historique sans identité'):
+        module.cached_model_grid(audio,cache,tmp_path/'other.json')
+    assert cache.is_file()
+    value['runtime_identity']={'environment':'beat_this','manifest_sha256':'older_install'}
+    cache.write_text(json.dumps(value))
+    with pytest.raises(ValueError,match='runtime actuel'):
+        module.cached_model_grid(audio,cache,tmp_path/'different.json')
     assert result['cache_provenance']['inference_reused'] is True

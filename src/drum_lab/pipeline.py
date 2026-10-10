@@ -11,7 +11,7 @@ import pretty_midi
 
 from . import adapters
 from .engraving import engrave, estimate_grid, KIT
-from .files import ROOT, digest, load, write, resource_path, RESOURCE_ROOT, find_tool
+from .files import ROOT, digest, load, write, resource_path, RESOURCE_ROOT, find_tool, runtime_identity
 from .grid import clean_model_grid
 
 DEFAULT_CONFIG={'separate_drums':True,'compact':True,'thresholds':[.22,.24,.32,.22,.30]}
@@ -27,13 +27,20 @@ def cached_model_grid(audio, cache_path, out):
     model=load(resource_path('configs/beat-this-model.json'))
     if grid.get('source')!='Beat This! final0 CPU, audio only' or grid.get('audio_sha256')!=digest(audio) or grid.get('checkpoint_sha256')!=model['sha256'] or grid.get('code_commit')!=model['code_commit']:
         raise ValueError('Cache de grille incompatible avec audio/modèle')
+    current_runtime = runtime_identity('beat_this')
+    if grid.get('runtime_identity') is None and 'manifest_sha256' in current_runtime:
+        raise ValueError('Cache de grille historique sans identité de runtime : nouvelle grille requise')
+    if grid.get('runtime_identity') is not None and grid['runtime_identity'] != current_runtime:
+        raise ValueError('Cache de grille incompatible avec runtime actuel')
     # Reprocessing is based on original observed peaks, never chained cleanup.
     if 'raw_beat_times_seconds' in grid:
         grid['beat_times_seconds']=grid['raw_beat_times_seconds']
         grid['downbeat_times_seconds']=grid['raw_downbeat_times_seconds']
     grid=clean_model_grid(grid)
     grid['cache_provenance']={'path':str(cache_path),'sha256':digest(cache_path),
-                              'inference_reused':True}
+                              'inference_reused':True,
+                              'runtime_status':'recorded_and_matching' if grid.get('runtime_identity') else 'historical_runtime_not_recorded',
+                              'current_runtime':current_runtime}
     write(out,grid)
     return grid
 
@@ -76,6 +83,7 @@ def generate(audio,out,config=None,piece_id='piece_01',title='Partition de batte
     started=time.monotonic();progress=progress or (lambda percent,label:None)
     record={'schema_version':1,'piece_id':piece_id,'title':title,'created_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),
             'status':'running','config':config,'synthetic':synthetic,'reference_used':False,
+            'runtime_identity':runtime_identity('adtof' if engine=='adtof_kit' else engine),
             'source_sha256':{str(p.relative_to(RESOURCE_ROOT)):digest(p) for folder in ('src','scripts') for p in (RESOURCE_ROOT/folder).rglob('*.py')}}
     write(out/'production.json',record)
     try:

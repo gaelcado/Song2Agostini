@@ -6,12 +6,22 @@ l'installation sur toutes les éditions du système.
 
 | Cible | Preuve au 10 octobre 2026 | Limite |
 | --- | --- | --- |
-| macOS Apple Silicon | Smoke local Python 3.11.14 : imports, page HTTP locale, WAV synthétique, MIDI brut/quantifié, MusicXML et PDF | Le bundle desktop est contrôlé séparément ; pas de certification Apple ni signature |
-| Linux Ubuntu | Workflow préparé `ubuntu-22.04`, résultats CI à obtenir | PDF exigé avec MuseScore 3 ; les synthétiques ne mesurent pas la fidélité |
-| Windows x64 | Workflows préparés `windows-2022` et `windows-2025`, résultats CI à obtenir | Ces runners sont Windows **Server**, pas Windows 10/11 client |
+| macOS Apple Silicon | Source locale Python 3.11.14, MIDI/XML/PDF ; runner macOS 14 Python 3.11.9, 180 tests et smoke installée réussis | PDF runner N/A (MuseScore absent), renderer local parfois SIGABRT |
+| Linux Ubuntu 22.04 | Python 3.11.17, 180 tests réussis ; export PDF CI en échec | MuseScore 3 rejette `--no-audio`, correction en cours |
+| Windows Server 2022 x64 | Python 3.11.9, 180 tests + imports/page HTTP/MIDI/XML ; preview `.exe` compilée et lancée, capture contrôlée | PDF N/A sans MuseScore ; runtime moteurs distinct encore en cours |
+| Windows Server 2025 x64 | Python 3.11.9, 180 tests + imports/page HTTP/MIDI/XML réussis | PDF N/A sans MuseScore ; aucun test Windows client |
 | Windows 10 x64 | Non testé sur machine ou VM réelle | Ne pas annoncer support certifié |
 | Windows 11 x64 | Non testé sur machine ou VM réelle | Ne pas annoncer support certifié |
-| WSL Ubuntu 24.04 | Workflow expérimental manuel préparé, résultat à obtenir | Hôte Server 2022 ; WSL Windows 10/11 client reste à tester |
+| WSL Ubuntu 24.04 | Premier essai en échec (winget absent/ancien WSL) ; MSI Microsoft vérifié ajouté, second essai en cours | Hôte Server 2022 ; WSL Windows 10/11 client reste à tester |
+
+Preuves : [source quatre OS, commit 29ac36b](https://github.com/gaelcado/Song2Agostini/actions/runs/38047515156),
+[preview Windows/macOS, commit 0a534ce](https://github.com/gaelcado/Song2Agostini/actions/runs/38047450886),
+[WSL corrigé, en cours](https://github.com/gaelcado/Song2Agostini/actions/runs/38047525528),
+[runtimes CPU, en cours](https://github.com/gaelcado/Song2Agostini/actions/runs/38047523936).
+La chaîne modèle locale dans le runtime fraîchement installé a exécuté les trois
+forwards synthétiques en 14,9 s (ADTOF), 4,8 s (Beat This!) et 7,3 s (Demucs).
+Ce contrôle ne fournit aucun score de fidélité musicale.
+
 
 ## Contrôles reproductibles
 
@@ -36,7 +46,8 @@ avec la commande, le chemin et le hash du renderer dans `notation.json`.
 Les paquets système du runner évoluent : les environnements CI ne sont pas des
 images de système entièrement gelées.
 
-`Experimental WSL source smoke` installe Ubuntu 24.04 avec l'action officielle
+`Experimental WSL source smoke` met à jour WSL avec le MSI Microsoft 3.0.1
+x64 vérifié par SHA256, puis installe Ubuntu 24.04 avec l’action officielle
 Canonical puis teste le commit exact, les unitaires et un véritable export PDF.
 Ubuntu 24.04 utilise son Python 3.12 dans un venv ; la matrice native utilise
 Python 3.11. Le résultat WSL est distinct d'un résultat Ubuntu natif.

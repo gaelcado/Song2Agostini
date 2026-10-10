@@ -6,6 +6,7 @@ from drum_lab import kit_detection as kit
 
 def test_provenance_rejects_altered_weights(tmp_path, monkeypatch):
     monkeypatch.setattr(kit, 'ROOT', tmp_path)
+    monkeypatch.setattr(kit, 'runtime_identity', lambda name:{'environment':name})
     monkeypatch.setattr(kit, 'resource_path', lambda name: tmp_path/name)
     monkeypatch.setattr(kit, 'worker_path', lambda name: tmp_path/'scripts'/name)
     monkeypatch.setattr(kit, 'runtime_root', lambda: tmp_path/'work')

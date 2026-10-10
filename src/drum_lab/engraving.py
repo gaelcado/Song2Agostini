@@ -14,7 +14,7 @@ from pathlib import Path
 import pretty_midi
 import numpy as np
 
-from .files import ROOT, env_python, worker_path, worker_environment, find_tool, source_file
+from .files import ROOT, env_python, worker_path, worker_environment, find_tool, source_file, runtime_identity, write
 from .quantization import quantize_hits
 
 # French percussion positions, independently documented in docs/notation.md.
@@ -51,7 +51,10 @@ def estimate_grid(audio, out, engine='librosa'):
     run_external([str(env_python(env)),
                     str(worker_path('estimate_grid.py')), str(Path(audio).resolve()), str(out.resolve()),'--engine',engine],
                    env=worker_environment(), check=True, timeout=300, capture_output=True, text=True)
-    return json.loads(out.read_text())
+    grid = json.loads(out.read_text(encoding='utf-8'))
+    grid['runtime_identity'] = runtime_identity(env)
+    write(out, grid)
+    return grid
 
 
 def compact_segments(patterns, tempo_patterns=None):

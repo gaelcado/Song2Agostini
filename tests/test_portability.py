@@ -86,3 +86,32 @@ def test_bootstrap_app_discovers_sibling_engine_runtime(tmp_path, monkeypatch):
     monkeypatch.setattr(files.sys,'prefix',str(tmp_path/'work/envs/app'))
     assert files.runtime_root() == tmp_path/'work'
     assert files.env_python('demucs',platform='win32') == tmp_path/'work/envs/demucs/Scripts/python.exe'
+
+
+def test_new_runtime_manifest_creates_new_cache_without_removing_old(tmp_path, monkeypatch):
+    import json
+    from drum_lab import adapters
+    runtime=tmp_path/'runtime';runtime.mkdir()
+    manifest=runtime/'runtime-install.json';manifest.write_text('{"torch":"version_a"}')
+    monkeypatch.setenv('DRUM_LAB_RUNTIME_ROOT',str(runtime))
+    monkeypatch.setattr(adapters,'ROOT',tmp_path)
+    worker=tmp_path/'worker.py';worker.write_text('# synthetic worker')
+    lock=tmp_path/'lock.txt';lock.write_text('historical lock unchanged')
+    weights=tmp_path/'weights.pth';weights.write_bytes(b'weights')
+    audio=tmp_path/'audio.wav';audio.write_bytes(b'synthetic input')
+    monkeypatch.setattr(adapters,'worker_path',lambda name:worker)
+    monkeypatch.setattr(adapters,'resource_path',lambda name:lock)
+    monkeypatch.setattr(adapters,'installed_package_path',lambda *a,**k:weights)
+    def infer(command,**kwargs):
+        Path(command[3]).write_bytes(b'synthetic cache')
+        files.write(Path(command[4])/'events.json',{'events':[]})
+    monkeypatch.setattr(adapters,'run_external',infer)
+    adapters.adtof(audio,tmp_path/'first','synthetic')
+    first=files.load(tmp_path/'first/cache.json')['key']
+    old=tmp_path/'work/cache'/first/'activations.npy'
+    assert old.is_file()
+    manifest.write_text('{"torch":"version_b"}')
+    adapters.adtof(audio,tmp_path/'second','synthetic')
+    second=files.load(tmp_path/'second/cache.json')['key']
+    assert second != first
+    assert old.read_bytes() == b'synthetic cache'

@@ -5,7 +5,7 @@ import shutil
 import subprocess
 from .processes import run_external
 from pathlib import Path
-from .files import ROOT, digest, load, write, resource_path, env_python, worker_path, worker_environment, runtime_root, source_file
+from .files import ROOT, digest, load, write, resource_path, env_python, worker_path, worker_environment, runtime_root, source_file, runtime_identity
 
 
 def kit_identity(audio):
@@ -20,7 +20,7 @@ def kit_identity(audio):
     return {'audio': digest(audio), 'worker': digest(worker_path('kit_worker.py')),
             'dependencies': digest(resource_path('configs/kit.lock.txt')),
             'config': digest(resource_path('configs/kit-model.json')), 'weights': weights,
-            'adapter': digest(source_file(__file__))}
+            'adapter': digest(source_file(__file__)), 'runtime': runtime_identity('kit')}
 
 
 def separate_kit(audio, out):

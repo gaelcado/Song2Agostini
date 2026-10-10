@@ -4,7 +4,7 @@ import json
 import subprocess
 from .processes import run_external
 from pathlib import Path
-from .files import ROOT, digest, load, write, resource_path, env_python, worker_path, worker_environment, installed_package_path, runtime_root
+from .files import ROOT, digest, load, write, resource_path, env_python, worker_path, worker_environment, installed_package_path, runtime_root, runtime_identity
 
 def adtof(audio, out, piece_id, thresholds=None, synthetic=False):
     audio=Path(audio).resolve(); out=Path(out); out.mkdir(parents=True,exist_ok=True)
@@ -15,7 +15,7 @@ def adtof(audio, out, piece_id, thresholds=None, synthetic=False):
     worker=worker_path('adtof_worker.py')
     lock=resource_path('configs/adtof.lock.txt')
     weights=installed_package_path('adtof', 'adtof_pytorch', weights=True)
-    identity={'audio':digest(audio),'worker':digest(worker),'dependencies':digest(lock),'weights':digest(weights)}
+    identity={'audio':digest(audio),'worker':digest(worker),'dependencies':digest(lock),'weights':digest(weights),'runtime':runtime_identity('adtof')}
     key=hashlib.sha256(json.dumps(identity,sort_keys=True).encode()).hexdigest()
     cache=ROOT/'work/cache'/key; cache.mkdir(parents=True,exist_ok=True)
     cmd=[str(env),str(worker),str(audio),str(cache/'activations.npy'),str(out),piece_id,json.dumps(thresholds),str(synthetic)]
@@ -30,7 +30,7 @@ def demucs(audio, out):
     if not weights.is_file():
         raise RuntimeError('Poids Demucs absents ; lancer scripts/setup_demucs.py')
     identity={'audio':digest(audio),'weights':digest(weights),'worker':digest(worker_path('demucs_worker.py')),
-              'dependencies':digest(resource_path('configs/demucs.lock.txt'))}
+              'dependencies':digest(resource_path('configs/demucs.lock.txt')),'runtime':runtime_identity('demucs')}
     key=hashlib.sha256(json.dumps(identity,sort_keys=True).encode()).hexdigest()
     cache=ROOT/'work/cache/separation'/key
     if not (cache/'drums.wav').is_file():
@@ -55,7 +55,7 @@ def drumscript(audio, out, piece_id, full_song=False, synthetic=False):
     worker=worker_path('drumscript_worker.py')
     package=installed_package_path('drumscript', 'drumscript')
     identity={'audio':digest(audio),'worker':digest(worker),'dependencies':digest(resource_path('configs/drumscript.lock.txt')),
-              'package_sources':{str(p.relative_to(package)):digest(p) for p in sorted(package.rglob('*.py'))}}
+              'runtime':runtime_identity('drumscript'),'package_sources':{str(p.relative_to(package)):digest(p) for p in sorted(package.rglob('*.py'))}}
     key=hashlib.sha256(json.dumps(identity,sort_keys=True).encode()).hexdigest()
     cache=ROOT/'work/cache/drumscript'/key; cache.mkdir(parents=True,exist_ok=True)
     cmd=[str(env_python('drumscript')),str(worker),str(audio),str(cache),str(out),piece_id,str(synthetic)]
