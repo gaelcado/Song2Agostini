@@ -74,6 +74,8 @@ def generate(audio,out,config=None,piece_id='piece_01',title='Partition de batte
     config={**DEFAULT_CONFIG,**(config or {})}
     engine=config.get('engine','adtof')
     if engine not in ('adtof','drumscript','adtof_kit'): raise ValueError('Moteur inconnu')
+    if config.get('hat_transient_candidates') and (engine != 'adtof' or not config['separate_drums']):
+        raise ValueError('Candidats transitoires réservés à ADTOF sur batterie isolée')
     grid_engine=config.get('grid_engine','librosa')
     if grid_engine not in ('librosa','beat_this'): raise ValueError('Moteur de grille inconnu')
     if engine=='adtof_kit' and not config['separate_drums']:
@@ -102,6 +104,9 @@ def generate(audio,out,config=None,piece_id='piece_01',title='Partition de batte
         else: prediction=drum_only_events(
             adapters.adtof(source,out,piece_id,config['thresholds'],synthetic)
             if engine=='adtof' else adapters.drumscript(source,out,piece_id,synthetic=synthetic))
+        if config.get('hat_transient_candidates'):
+            from .transient_audit import apply_hat_candidates
+            prediction = apply_hat_candidates(source, out, piece_id, config['thresholds'], prediction, synthetic=synthetic)
         raw=pretty_midi.PrettyMIDI(str(out/'raw.mid'))
         if any(not part.is_drum for part in raw.instruments): raise ValueError('Le MIDI contient une piste mélodique')
         record['event_count']=len(prediction['events']);record['percussion_only']=True
@@ -130,6 +135,8 @@ def generate(audio,out,config=None,piece_id='piece_01',title='Partition de batte
         warnings=[('La partition commence à la première pulsation estimée ; le MIDI brut conserve la position dans l’audio.'
                    if warning.startswith('MusicXML relatif') else warning)
                   for warning in notation.get('warnings',[])]
+        if config.get('hat_transient_candidates'):
+            warnings.append('Ajouts de charleston expérimentaux : transitoires détectés, identité instrumentale non validée.')
         warnings.extend(['La signature et le premier temps sont des hypothèses audio à vérifier.',
                          'La fidélité musicale n’est pas validée automatiquement face à une référence humaine.'])
         if grid_engine=='beat_this':
