@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from drum_lab.ui import Application, LocalServer, MAX_BYTES, validate_audio
+from drum_lab.ui import Application, LocalServer, MAX_BYTES, summarize, validate_audio
 
 
 def fake_generate(audio, out, **kwargs):
@@ -88,6 +88,32 @@ def test_local_page_and_complete_download_flow(local_server):
     assert headers["Content-Disposition"].startswith("inline")
     status, headers, _ = request(server, "GET", data["artifacts"]["pdf"] + "?download=1", headers=auth)
     assert status == 200 and headers["Content-Disposition"].startswith("attachment")
+
+
+def test_job_details_are_numbers_without_paths_or_hashes(local_server, tmp_path):
+    def generate(audio, out, **kwargs):
+        (out / "notation").mkdir()
+        (out / "notation" / "notation.json").write_text(json.dumps({
+            "measures": 78, "displayed_measures": 40, "input_hits": 1162,
+            "notation_chord_hits": 1147, "duplicate_notation_hits_collapsed": 15,
+            "quality": {"median_shift_ms": 7.26, "max_shift_ms": 31.4, "large_shift_count": 0},
+            "outputs": {"score.pdf": "/private/secret/score.pdf"}, "renderer_sha256": "abc"}))
+        (out / "grid.json").write_text(json.dumps({"bpm": 90.9, "time_signature": "4/4", "duration_seconds": 217.9}))
+        return fake_generate(audio, out, **kwargs) | {"duration_seconds": 321.4}
+    server, _ = local_server(generate)
+    auth = session(server)
+    data = completed(server, auth, upload(server, auth))
+    assert data["details"] == {
+        "audio_seconds": 217.9, "tempo_bpm": 90.9, "time_signature": "4/4", "measures": 78,
+        "displayed_measures": 40, "detected_hits": 1162, "engraved_hits": 1147, "merged_hits": 15,
+        "median_shift_ms": 7.3, "max_shift_ms": 31.4, "large_shifts": 0, "compute_seconds": 321}
+    assert "secret" not in json.dumps(data) and "abc" not in json.dumps(data)
+
+
+def test_summary_tolerates_missing_or_malformed_files(tmp_path):
+    assert summarize(tmp_path, {}) == {}
+    (tmp_path / "grid.json").write_text("[1, 2")
+    assert summarize(tmp_path, {"event_count": 12, "duration_seconds": float("nan")}) == {"detected_hits": 12}
 
 
 def test_host_origin_token_and_session_isolation(local_server):

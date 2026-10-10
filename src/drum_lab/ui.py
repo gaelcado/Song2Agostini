@@ -83,6 +83,48 @@ def render_preview(pdf: Path, output: Path) -> Path:
     return preview
 
 
+def summarize(output: Path, result: dict) -> dict:
+    """Chiffres lisibles du calcul pour l'interface ; ni chemin ni empreinte."""
+    def load(name):
+        try:
+            value = json.loads((output / name).read_text())
+        except (OSError, ValueError):
+            return {}
+        return value if isinstance(value, dict) else {}
+
+    def number(value, digits=1):
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+            return None
+        return round(value, digits)
+
+    notation, grid = load("notation/notation.json"), load("grid.json")
+    quality = notation.get("quality") if isinstance(notation.get("quality"), dict) else {}
+    signature = grid.get("time_signature")
+    pulse_length = grid.get("pulse_quarter_length", 1)
+    tempo = number(grid.get("bpm"))
+    if pulse_length == 1.5 and tempo is not None:
+        tempo = number(grid["bpm"] / 1.5)
+    fields = {
+        "audio_seconds": number(grid.get("duration_seconds", result.get("audio_duration_seconds"))),
+        "tempo_bpm": tempo,
+        "time_signature": signature if isinstance(signature, str) and len(signature) <= 5 else None,
+        "measures": number(notation.get("measures"), 0),
+        "displayed_measures": number(notation.get("displayed_measures"), 0),
+        "detected_hits": number(notation.get("input_hits", result.get("event_count")), 0),
+        "engraved_hits": number(notation.get("notation_chord_hits"), 0),
+        "merged_hits": number(notation.get("duplicate_notation_hits_collapsed"), 0),
+        "median_shift_ms": number(quality.get("median_shift_ms")),
+        "max_shift_ms": number(quality.get("max_shift_ms")),
+        "large_shifts": number(quality.get("large_shift_count"), 0),
+        "compute_seconds": number(result.get("duration_seconds"), 0),
+    }
+    evidence = grid.get("meter_evidence")
+    if isinstance(evidence, dict):
+        fields["tempo_unit"] = "noire pointée" if pulse_length == 1.5 else "noire"
+        fields["meter_status"] = "candidate" if evidence.get("status") == "inferred_hypothesis" else "incertain"
+    return {key: value for key, value in fields.items() if value is not None}
+
+
 class Application:
     def __init__(self, root: Path, generate=None, validator=None):
         self.root = Path(root).resolve()
@@ -125,7 +167,7 @@ class Application:
                     raise RuntimeError("sorties de notation manquantes")
                 with self.lock:
                     job.update(status="completed", percent=100, label="Partition prête",
-                               artifacts=artifacts,
+                               artifacts=artifacts, details=summarize(job["output"], result),
                                warnings=[str(w)[:1000] for w in result.get("warnings", [])])
             except Exception:
                 (job["input"].parent / "error.log").write_text(traceback.format_exc())
@@ -260,7 +302,7 @@ class Handler(BaseHTTPRequestHandler):
                 self._json(404, {"error": "Traitement introuvable."})
                 return
             if len(parts) == 3:
-                self._json(200, {key: job[key] for key in ("id", "title", "status", "percent", "label", "warnings", "error")} | {
+                self._json(200, {key: job[key] for key in ("id", "title", "status", "percent", "label", "warnings", "error", "details")} | {
                     "artifacts": {kind: f"/api/jobs/{job['id']}/{kind}" for kind in job["artifacts"]},
                     "preview": f"/api/jobs/{job['id']}/preview" if "pdf" in job["artifacts"] else None,
                 })
@@ -330,7 +372,7 @@ class Handler(BaseHTTPRequestHandler):
             output = directory / "output"
             output.mkdir()
             job = dict(id=job_id, session=session, status="uploading", percent=0,
-                       label="En attente", warnings=[], error=None, artifacts={},
+                       label="En attente", warnings=[], error=None, artifacts={}, details={},
                        input=directory / ("input" + suffix), output=output,
                        title=Path(filename).stem[:120])
             app.jobs[job_id] = job
