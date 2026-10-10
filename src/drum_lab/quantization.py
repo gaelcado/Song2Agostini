@@ -43,6 +43,23 @@ def quantize_hits(hits, grid):
     else:
         def to_beat(t): return (t-origin)*bpm/60
         def to_seconds(b): return origin+b*60/bpm
+    # A local tuplet requires both inner thirds in the actual predicted attacks.
+    # Never complete a triplet from one onset or from a musical expectation.
+    triplet_beats = []
+    if grid.get('local_tuplets') and grid.get('time_signature', '4/4').split('/')[1] == '4':
+        groups = {}
+        for n in hits:
+            b = to_beat(n.start)
+            groups.setdefault(math.floor(b), []).append(b % 1)
+        for beat, fractions in groups.items():
+            values = np.asarray(fractions)
+            ternary = np.rint(values * 3) / 3
+            binary = np.rint(values * 4) / 4
+            inner = set(np.rint(values * 3).astype(int)) & {1, 2}
+            if (inner == {1, 2} and np.max(abs(values-ternary)) <= .07
+                    and np.mean(abs(values-binary)-abs(values-ternary)) >= .035):
+                triplet_beats.append(beat)
+    divisions = 12 if triplet_beats else 4
     # Include pickup material without changing beat phase: prepend complete bars.
     first = min(to_beat(n.start) for n in hits)
     numerator, denominator = map(int, grid.get('time_signature', '4/4').split('/'))
@@ -52,14 +69,21 @@ def quantize_hits(hits, grid):
     prepend = max(0, math.ceil(-round(first*4/step)*step/(bar_quarters*4)))
     mapped=[]
     for n in hits:
-        slot=round((to_beat(n.start)+prepend*bar_quarters)*4/step)*step
-        start=to_seconds(slot/4-prepend*bar_quarters)
+        b = to_beat(n.start)
+        if math.floor(b) in triplet_beats:
+            quantized = math.floor(b) + round((b % 1)*3)/3
+        else:
+            quantized = round(b*4)/4
+        slot = round((quantized+prepend*bar_quarters)*divisions)
+        start=to_seconds(slot/divisions-prepend*bar_quarters)
         # An onset extremely close to audio zero can round before the audio domain.
         start=max(0., start)
         mapped.append((n, slot, start))
     shifts=np.asarray([abs(start-n.start) for n,slot,start in mapped])
     pairs=[(slot,n.pitch) for n,slot,start in mapped]
-    quality={'median_shift_ms':float(np.median(shifts)*1000),
+    quality={'divisions':divisions, 'local_triplet_beats':[int(b+prepend*bar_quarters) for b in triplet_beats],
+             'tuplet_policy':'two observed inner thirds; max error .07 quarter; mean gain .035 quarter; no added hits',
+             'median_shift_ms':float(np.median(shifts)*1000),
              'max_shift_ms':float(np.max(shifts)*1000),
              'large_shift_threshold_ms':50, 'large_shift_count':int((shifts>.05).sum()),
              'tracked_gap_policy':'observed pulses without global missing-beat repair' if grid.get('meter_evidence') else 'global median missing-beat repair',

@@ -235,3 +235,58 @@ def test_export_uses_platform_supported_qt_plugin(tmp_path,monkeypatch,platform,
     result=engrave(source,{'bpm':120,'duration_seconds':2},tmp_path/'notation')
     assert result['status']=='draft_rendered' and len(calls)==1
     assert (tmp_path/'notation/score.pdf').is_file()
+
+
+def test_triplets_preserve_events_chords_rests_and_complete_voices(tmp_path,monkeypatch):
+    import drum_lab.engraving as module
+    monkeypatch.setattr(module,'renderer',lambda:'/fake/mscore')
+    monkeypatch.setattr(module.subprocess,'run',fake_render)
+    midi=pretty_midi.PrettyMIDI(initial_tempo=120,resolution=960)
+    kit=pretty_midi.Instrument(0,is_drum=True)
+    for pitch,t in [(42,0),(42,1/6),(42,1/3),(38,1/6),(36,1/6),(38,1/3),(42,.75)]:
+        kit.notes.append(pretty_midi.Note(90,pitch,t,t+.05))
+    midi.instruments=[kit];source=tmp_path/'raw.mid';midi.write(str(source));before=source.read_bytes()
+    result=engrave(source,{'bpm':120,'duration_seconds':2,'local_tuplets':True},tmp_path/'score')
+    xml=ET.parse(tmp_path/'score/score.musicxml')
+    assert xml.findtext('.//divisions')=='12'
+    assert result['musicxml_audit']['expanded_hits']==7
+    assert result['musicxml_audit']['valid']
+    assert source.read_bytes()==before
+    for voice in ('1','2'):
+        notes=[n for n in xml.findall('.//note') if n.findtext('voice')==voice and n.find('chord') is None]
+        assert sum(int(n.findtext('duration')) for n in notes)==48
+        assert len([n for n in notes if n.find('time-modification') is not None])==3
+    assert len(xml.findall('.//tuplet[@type="start"]'))==2
+    assert len(xml.findall('.//tuplet[@type="stop"]'))==2
+    for note in xml.findall('.//note'):
+        tm=note.find('time-modification')
+        if tm is not None:
+            assert tm.findtext('actual-notes')=='3' and tm.findtext('normal-notes')=='2'
+            assert note.findtext('duration')=='4' and note.findtext('type')=='eighth'
+        tags=[n.tag for n in note]
+        if 'beam' in tags and 'notations' in tags:
+            assert tags.index('beam')<tags.index('notations')
+
+
+def test_triplet_quarter_has_eighth_normal_unit_and_no_beam(tmp_path,monkeypatch):
+    import drum_lab.engraving as module
+    monkeypatch.setattr(module,'renderer',lambda:'/fake/mscore')
+    monkeypatch.setattr(module.subprocess,'run',fake_render)
+    midi=pretty_midi.PrettyMIDI(initial_tempo=120,resolution=960)
+    kit=pretty_midi.Instrument(0,is_drum=True)
+    for pitch,t in [(42,0),(42,1/6),(42,1/3),(38,1/6)]:
+        kit.notes.append(pretty_midi.Note(90,pitch,t,t+.05))
+    midi.instruments=[kit];source=tmp_path/'raw.mid';midi.write(str(source))
+    engrave(source,{'bpm':120,'duration_seconds':2,'local_tuplets':True},tmp_path/'score')
+    xml=ET.parse(tmp_path/'score/score.musicxml')
+    quarter=next(n for n in xml.findall('.//note') if n.findtext('duration')=='8')
+    assert quarter.findtext('type')=='quarter'
+    assert quarter.findtext('time-modification/normal-type')=='eighth'
+    assert quarter.find('beam') is None
+    assert quarter.find('notations/tuplet[@type="stop"]') is not None
+
+
+def test_repeats_require_same_rhythmic_interpretation():
+    from drum_lab.engraving import compact_segments
+    pattern=((0,(42,)),)
+    assert compact_segments([pattern,pattern],rhythmic_patterns=[(0,),()])==[(0,1,1),(1,1,1)]

@@ -113,6 +113,8 @@ def generate(audio,out,config=None,piece_id='piece_01',title='Partition de batte
         else:
             grid=estimate_grid(audio,out/'grid.json',engine=grid_engine)
         grid=infer_audio_meter(audio,grid)
+        if config.get('local_tuplets'):
+            grid['local_tuplets'] = True
         write(out/'grid.json',grid)
         record['meter_policy']=grid.get('meter_evidence',{})
         record['grid_engine']=grid_engine

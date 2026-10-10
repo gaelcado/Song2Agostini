@@ -57,3 +57,21 @@ def test_invalid_grid_rejected(grid):
 
 def test_empty_hits_rejected_explicitly():
     with pytest.raises(ValueError,match='Aucun coup'): quantize_hits([],{'bpm':120})
+
+
+def test_local_triplets_require_both_observed_inner_thirds():
+    mapped,_,_,quality=quantize_hits([hit(0),hit(1/6),hit(1/3),hit(.75)],
+                                   {'bpm':120,'local_tuplets':True})
+    assert quality['local_triplet_beats']==[0]
+    assert quality['divisions']==12
+    assert [s for _,s,_ in mapped]==[0,4,8,18]
+    assert quality['max_shift_ms']<1e-9
+    assert len(mapped)==4
+    _,_,_,sparse=quantize_hits([hit(0),hit(1/6)],{'bpm':120,'local_tuplets':True})
+    assert sparse['local_triplet_beats']==[] and sparse['divisions']==4
+
+
+def test_compound_meter_has_no_artificial_triplets():
+    _,_,_,quality=quantize_hits([hit(0),hit(1/6),hit(1/3)],
+                               {'bpm':120,'time_signature':'12/8','local_tuplets':True})
+    assert quality['local_triplet_beats']==[]
