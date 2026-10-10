@@ -79,3 +79,10 @@ def test_installed_wheel_uses_shared_resources_and_user_home(tmp_path, monkeypat
     monkeypatch.delattr(files.sys, '_MEIPASS', raising=False)
     assert files.resource_home() == tmp_path/'prefix/share/drum-lab'
     assert files.application_home(frozen=False, platform='darwin', environ={'HOME':'/Users/learner'}) == Path('/Users/learner/Library/Application Support/DrumLab')
+
+
+def test_bootstrap_app_discovers_sibling_engine_runtime(tmp_path, monkeypatch):
+    monkeypatch.delenv('DRUM_LAB_RUNTIME_ROOT', raising=False)
+    monkeypatch.setattr(files.sys,'prefix',str(tmp_path/'work/envs/app'))
+    assert files.runtime_root() == tmp_path/'work'
+    assert files.env_python('demucs',platform='win32') == tmp_path/'work/envs/demucs/Scripts/python.exe'

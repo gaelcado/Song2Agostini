@@ -50,7 +50,13 @@ def source_file(module_file):
 
 
 def runtime_root():
-    return Path(os.environ.get('DRUM_LAB_RUNTIME_ROOT', ROOT/'work'))
+    if os.environ.get('DRUM_LAB_RUNTIME_ROOT'):
+        return Path(os.environ['DRUM_LAB_RUNTIME_ROOT'])
+    # bootstrap installs a wheel in <runtime>/envs/app; launchers need no shell setup.
+    prefix = Path(sys.prefix)
+    if prefix.name == 'app' and prefix.parent.name == 'envs':
+        return prefix.parent.parent
+    return ROOT/'work'
 
 
 def env_python(name, *, platform=None):

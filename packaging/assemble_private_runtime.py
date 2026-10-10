@@ -118,6 +118,30 @@ def main():
                     shutil.copy2(notice_source,destination)
                     copied.append(str(destination.relative_to(RUNTIME)))
         textfile(notices/engine/'build-environment-declarations.json',json.dumps({'scope':'actual_frozen_worker_build_environment','python':str(environment_python),'declarations':declarations,'copied_notice_files':copied,'redistribution_approved':False},ensure_ascii=False,indent=2))
+    main_environment=ROOT/'.venv/bin/python'
+    main_declarations=json.loads(subprocess.check_output([str(main_environment),'-c',metadata_code],text=True))
+    application_notices=notices/'application-runtime';application_notices.mkdir(parents=True,exist_ok=True)
+    selected={'pyside6','pyside6-addons','pyside6-essentials','shiboken6','pyinstaller','pyinstaller-hooks-contrib'}
+    for distribution in main_declarations:
+        name=(distribution['name'] or '').lower().replace('_','-')
+        if name in selected:
+            for index,source_file in enumerate(distribution['license_files']):
+                notice_source=Path(source_file)
+                if notice_source.is_file():
+                    destination=application_notices/name/(str(index)+'-'+notice_source.name)
+                    destination.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(notice_source,destination)
+    qt_notice=ROOT/'.venv/lib/python3.11/site-packages/PySide6/Qt/lib/QtWebEngineCore.framework/Resources/qtwebengine_licenses.html'
+    if qt_notice.exists():shutil.copy2(qt_notice,application_notices/'qtwebengine_licenses.html')
+    python_license=Path(subprocess.check_output([str(main_environment),'-c','import sys;print(sys.base_prefix)'],text=True).strip())/'LICENSE.txt'
+    if python_license.exists():shutil.copy2(python_license,application_notices/'Python-LICENSE.txt')
+    textfile(application_notices/'build-environment-declarations.json',json.dumps({'scope':'application_build_environment_not_final_frozen_app_file_inventory','declarations':main_declarations,'redistribution_approved':False},ensure_ascii=False,indent=2))
+    textfile(sources/'application_runtime/README.txt',
+      'Python source: https://www.python.org/downloads/source/\n'
+      'Qt/PySide source: https://download.qt.io/official_releases/QtForPython/pyside6/\n'
+      'QtWebEngine Chromium third-party notices included where present in installed bundle.\n'
+      'PyInstaller source: https://github.com/pyinstaller/pyinstaller/tree/v6.16.0\n'
+      'PROVENANCE ONLY: no complete corresponding-source offer or legal redistribution approval.\n'
+      'Actual main app asset inventory must be obtained after its final freeze.\n')
     entries={}
     for name in ('adtof','demucs','beat_this','ffmpeg','ffprobe','musescore'):
         if name in ('adtof','demucs','beat_this'):
@@ -137,6 +161,7 @@ def main():
           'source_offer_path':str((source_root/'README.txt').relative_to(RUNTIME)),
           'source_offer_status':'provenance_only_not_complete_corresponding_source',
           'redistribution_approved':False,'sha256':hashes(roots+[license_root,source_root])}
+    entries['application_runtime']={'path':'licenses/application-runtime','license_path':'licenses/application-runtime','source_offer_path':'source-provenance/application_runtime/README.txt','source_offer_status':'provenance_only_not_complete_corresponding_source','redistribution_approved':False,'sha256':hashes([application_notices,sources/'application_runtime'])}
     manifest={'schema_version':1,'platform':sys.platform,'architecture':platform.machine(),
       'created_utc':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()),'self_contained':True,
       'self_contained_status':'assembled_candidate_pending_complete_offline_pipeline',
