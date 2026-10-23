@@ -69,10 +69,14 @@ def beat_this_grid(audio, out):
     fit=float(np.mean(bar_gaps==4)) if len(bar_gaps) else None
     probs=torch.sigmoid(downbeat_logits).cpu().numpy()
     frames=np.minimum(np.rint(downbeats*50).astype(int),len(probs)-1)
+    # Per-beat downbeat evidence (max within ±2 frames) for variable bar lengths.
+    beat_frames=np.rint(beats*50).astype(int)
+    beat_activation=[float(probs[max(0,f-2):min(len(probs),f+3)].max()) for f in beat_frames]
     grid={'source':'Beat This! final0 CPU, audio only','audio_sha256':hashlib.sha256(audio.read_bytes()).hexdigest(),
           'bpm':60/float(np.median(np.diff(beats))),'origin_seconds':float(downbeats[0]),
           'origin_policy':'first model-predicted downbeat; independent of drum pitch',
           'beat_times_seconds':beats.tolist(),'downbeat_times_seconds':downbeats.tolist(),
+          'raw_beat_downbeat_activation':beat_activation,
           'time_signature':'4/4','time_signature_status':'assumed_export_limit',
           'downbeat_status':'model_prediction_unverified','subdivision':4,'duration_seconds':len(signal)/sr,
           'phase_evidence':{'four_beat_bar_fraction':fit,'bar_intervals_observed':len(bar_gaps),

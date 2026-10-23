@@ -83,6 +83,12 @@ def render_preview(pdf: Path, output: Path) -> Path:
     return preview
 
 
+# Measured on the automatic verification bench (docs/boucle-automatique.md):
+# bars follow audio downbeats with local length changes and kit cues.
+PRODUCT_CONFIG = {"separate_drums": True, "compact": True, "grid_engine": "beat_this",
+                  "variable_meter": True, "drum_downbeat_cues": True, "cymbal_streams_as_ride": True}
+
+
 def summarize(output: Path, result: dict) -> dict:
     """Chiffres lisibles du calcul pour l'interface ; ni chemin ni empreinte."""
     def load(name):
@@ -100,6 +106,11 @@ def summarize(output: Path, result: dict) -> dict:
     notation, grid = load("notation/notation.json"), load("grid.json")
     quality = notation.get("quality") if isinstance(notation.get("quality"), dict) else {}
     signature = grid.get("time_signature")
+    written = notation.get("measure_signatures")
+    if isinstance(written, list) and all(isinstance(v, str) and len(v) <= 5 for v in written) and len(set(written)) > 1:
+        # Most frequent first: "4/4 · 5/4" tells the musician the meter changes.
+        counts = {v: written.count(v) for v in written}
+        signature = " · ".join(sorted(counts, key=lambda v: -counts[v])[:3])
     pulse_length = grid.get("pulse_quarter_length", 1)
     tempo = number(grid.get("bpm"))
     if pulse_length == 1.5 and tempo is not None:
@@ -107,7 +118,7 @@ def summarize(output: Path, result: dict) -> dict:
     fields = {
         "audio_seconds": number(grid.get("duration_seconds", result.get("audio_duration_seconds"))),
         "tempo_bpm": tempo,
-        "time_signature": signature if isinstance(signature, str) and len(signature) <= 5 else None,
+        "time_signature": signature if isinstance(signature, str) and len(signature) <= 17 else None,
         "measures": number(notation.get("measures"), 0),
         "displayed_measures": number(notation.get("displayed_measures"), 0),
         "detected_hits": number(notation.get("input_hits", result.get("event_count")), 0),
@@ -122,6 +133,8 @@ def summarize(output: Path, result: dict) -> dict:
     if isinstance(evidence, dict):
         fields["tempo_unit"] = "noire pointée" if pulse_length == 1.5 else "noire"
         fields["meter_status"] = "candidate" if evidence.get("status") == "inferred_hypothesis" else "incertain"
+    if isinstance(grid.get("bar_evidence"), dict) and grid["bar_evidence"].get("status") == "inferred_hypothesis":
+        fields["meter_status"] = "candidate"
     return {key: value for key, value in fields.items() if value is not None}
 
 
@@ -150,7 +163,7 @@ class Application:
                 self.validator(job["input"])
                 result = self.generate(
                     job["input"], job["output"],
-                    config={"separate_drums": True, "compact": True, "grid_engine": "beat_this"},
+                    config=PRODUCT_CONFIG,
                     piece_id="piece_01", title=job["title"],
                     progress=lambda percent, label: self._progress(job_id, percent, label),
                 )

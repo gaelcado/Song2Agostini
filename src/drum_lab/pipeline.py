@@ -104,6 +104,13 @@ def generate(audio,out,config=None,piece_id='piece_01',title='Partition de batte
         else: prediction=drum_only_events(
             adapters.adtof(source,out,piece_id,config['thresholds'],synthetic)
             if engine=='adtof' else adapters.drumscript(source,out,piece_id,synthetic=synthetic))
+        if config.get('absolute_peak_classes'):
+            if engine != 'adtof': raise ValueError('Sélection absolue réservée à ADTOF')
+            from .picking import repick
+            key=load(out/'cache.json')['key']
+            prediction=drum_only_events(repick(out, ROOT/'work/cache'/key/'activations.npy',
+                                                config.get('absolute_thresholds', config['thresholds']),
+                                                config['absolute_peak_classes']))
         if config.get('hat_transient_candidates'):
             from .transient_audit import apply_hat_candidates
             prediction = apply_hat_candidates(source, out, piece_id, config['thresholds'], prediction, synthetic=synthetic)
@@ -118,6 +125,9 @@ def generate(audio,out,config=None,piece_id='piece_01',title='Partition de batte
         else:
             grid=estimate_grid(audio,out/'grid.json',engine=grid_engine)
         grid=infer_audio_meter(audio,grid)
+        if config.get('variable_meter') and grid_engine=='beat_this':
+            from .bars import apply_variable_bars
+            grid=apply_variable_bars(grid, events=prediction['events'] if config.get('drum_downbeat_cues') else None)
         if config.get('local_tuplets'):
             grid['local_tuplets'] = True
         write(out/'grid.json',grid)
@@ -128,7 +138,8 @@ def generate(audio,out,config=None,piece_id='piece_01',title='Partition de batte
             record['grid_dependencies']=(resource_path('configs/beat-this.lock.txt')).read_text()
             record['grid_model_sha256']=digest(resource_path('configs/beat-this-model.json'))
         progress(80,'Quantification et mise en page de la partition')
-        notation=engrave(out/'raw.mid',grid,out/'notation',title,compact=config['compact'])
+        notation=engrave(out/'raw.mid',grid,out/'notation',title,compact=config['compact'],
+                         cymbal_streams_as_ride=bool(config.get('cymbal_streams_as_ride')))
         progress(94,'Contrôle des fichiers et préparation des téléchargements')
         for name in ('score.pdf','score.musicxml','quantized.mid'):
             shutil.copy2(out/'notation'/name,out/name)
@@ -141,7 +152,9 @@ def generate(audio,out,config=None,piece_id='piece_01',title='Partition de batte
                          'La fidélité musicale n’est pas validée automatiquement face à une référence humaine.'])
         if grid_engine=='beat_this':
             warnings.append('Premiers temps prédits par un modèle audio expérimental ; brouillon non validé.')
-            if grid.get('meter_evidence',{}).get('status')=='abstained':
+            if grid.get('bar_evidence',{}).get('status')=='inferred_hypothesis':
+                warnings.append('Mesures découpées sur les premiers temps estimés ; changements de signature possibles, à vérifier à l’écoute.')
+            elif grid.get('meter_evidence',{}).get('status')=='abstained':
                 warnings.append('Regroupement des mesures incertain : candidate dominante ; changements locaux non représentés.')
             warnings.append('La confiance métrique est un diagnostic non calibré ; les alternatives de tempo restent ouvertes.')
         if config['separate_drums']:

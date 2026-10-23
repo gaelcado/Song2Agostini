@@ -22,9 +22,17 @@ def clean_model_grid(grid):
     groups = np.split(beats, np.where(np.diff(beats) >= .35 * period)[0] + 1)
     centers = np.asarray([np.mean(group) for group in groups])
     selected = []
+    raw_activation = grid.get('raw_beat_downbeat_activation')
+    activation = []
+    offset = 0
     for index, group in enumerate(groups):
         target = (centers[index-1] + centers[index+1])/2 if 0 < index < len(groups)-1 else centers[index]
-        selected.append(float(group[np.argmin(abs(group-target))]))
+        choice = int(np.argmin(abs(group-target)))
+        selected.append(float(group[choice]))
+        if raw_activation is not None:
+            # A merged doublet keeps the strongest downbeat evidence of its cluster.
+            activation.append(float(max(raw_activation[offset:offset+len(group)])))
+        offset += len(group)
     clean = np.asarray(selected)
     if len(clean) < 2:
         raise ValueError('Pulsations nettoyées insuffisantes')
@@ -39,6 +47,7 @@ def clean_model_grid(grid):
                   beat_times_seconds=clean.tolist(), downbeat_times_seconds=clean[indices].tolist(),
                   origin_seconds=float(clean[indices[0]]), bpm=60/float(np.median(np.diff(clean))),
                   phase_evidence=evidence,
+                  **({'beat_downbeat_activation': activation} if raw_activation is not None else {}),
                   grid_postprocessing={'policy':'merge_close_model_peaks_v1',
                                        'refractory_fraction_of_median_quarter':.35,
                                        'selection':'observed peak nearest adjacent cluster midpoint',

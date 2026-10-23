@@ -25,3 +25,5 @@ dist/
 .env.*
 *.pem
 *.key
+/.migration-tools/
+!/site-christophe-arent/.env.example

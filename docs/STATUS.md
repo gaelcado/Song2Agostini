@@ -1,3 +1,11 @@
+## Boucle de vérification automatique — 17 octobre 2026
+
+Le retour musicien hebdomadaire est complété par un vérificateur automatique (`docs/boucle-automatique.md`) : références réelles saisies par l'agent (Perfect Strangers, Deluxe Michael, Crazy, Heathens ; non validées humainement), MIDI GMD tech_01–09 et OGA bench_02/08. Métrique principale : note écrite dans la bonne mesure, au bon temps, sur le bon instrument (MusicXML expansé). L'utilisateur a demandé un travail sans sous-agents : séparation recherche/vérification seulement logique, réglages sur moyennes.
+
+Défaut principal trouvé : mesures comptées depuis la première pulsation (intro comprise), d'où une partition entière décalée d'un temps sur Perfect Strangers et aucun 5/4 possible. Correctif : mesures de longueur variable choisies par programmation dynamique sur l'activation des premiers temps Beat This, longueur dominante apprise du morceau, indices de kit ; gravure MusicXML avec changements de signature. Mesure+temps réels 0,607 → 0,822, GMD 0,550 → 0,751 ; mesures exactes réels 75 % → 97,5 %. Contrôle gelé Bacalao con pan (jamais utilisé pour régler, saisi après le gel) : 0,310 → 0,689, mesures exactes 41/88 → 81/88. Détection inchangée. Activé dans le produit (`PRODUCT_CONFIG`) avec cymbales régulières écrites en ride. 258 tests passent. Bundle macOS non reconstruit.
+
+Prochaines actions : charleston manqué sur contretemps (sélection absolue en réserve), caisse claire et cymbales de Bacalao, signification des « (x) » de Crazy à demander au batteur, swing/triolets.
+
 ## Lecteur PDF du bundle corrigé — 10 octobre 2026
 
 Le panneau gris est reproduit avec les restrictions réelles de la fenêtre native : l’intercepteur bloquait les modules internes `chrome://resources/` importés par le lecteur PDF Chromium. Le test visuel précédent utilisait un profil sans cet intercepteur et ne couvrait donc pas ce défaut. Correction `854e3a2` : autorisation de cet hôte interne précis, sans autoriser les autres hôtes ni les requêtes réseau externes. 29 tests ciblés passent, dont les régressions sur la politique de ressources.

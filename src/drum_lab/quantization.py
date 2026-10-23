@@ -64,6 +64,9 @@ def quantize_hits(hits, grid):
     first = min(to_beat(n.start) for n in hits)
     numerator, denominator = map(int, grid.get('time_signature', '4/4').split('/'))
     bar_quarters = numerator * 4 / denominator
+    if grid.get('bar_beats'):
+        # Variable bars: a pickup is completed with the first estimated bar length.
+        bar_quarters = float(grid['bar_beats'][0]) * float(grid.get('pulse_quarter_length', 1.))
     # A dotted pulse spans six sixteenth slots; never discard its inner offbeats.
     step = 1
     prepend = max(0, math.ceil(-round(first*4/step)*step/(bar_quarters*4)))
@@ -88,5 +91,6 @@ def quantize_hits(hits, grid):
              'large_shift_threshold_ms':50, 'large_shift_count':int((shifts>.05).sum()),
              'tracked_gap_policy':'observed pulses without global missing-beat repair' if grid.get('meter_evidence') else 'global median missing-beat repair',
              'collision_count':len(pairs)-len(set(pairs)), 'pickup_prepend_measures':prepend,
+             'pickup_bar_quarters':bar_quarters,
              'extrapolation_policy':'edge interval, tracked beats only; no fabricated beat at audio zero'}
     return mapped, lambda t: to_beat(t)+prepend*bar_quarters, lambda b: to_seconds(b-prepend*bar_quarters), quality

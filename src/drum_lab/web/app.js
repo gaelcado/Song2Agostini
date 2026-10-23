@@ -151,7 +151,9 @@ function renderFacts(details) {
     fact('Durée', `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`, 'Durée de l’audio analysé.');
   }
   if (d.tempo_bpm != null) fact('Tempo', `≈ ${number(d.tempo_bpm)} BPM${d.tempo_unit ? ` · ${d.tempo_unit}` : ''}`, 'Estimé depuis l’audio : à confronter à votre oreille.');
-  if (d.time_signature) fact('Mesure', d.time_signature, d.meter_status === 'candidate'
+  if (d.time_signature) fact('Mesure', d.time_signature, d.time_signature.includes('·')
+    ? 'Changements de mesure repérés depuis l’audio (la plus fréquente d’abord) ; à vérifier à l’écoute.'
+    : d.meter_status === 'candidate'
     ? 'Candidate issue de l’audio ; premiers temps et changements locaux à vérifier.'
     : d.meter_status === 'incertain' ? 'Regroupement incertain : notation provisoire à vérifier.'
     : 'Hypothèse de grille historique, à vérifier.');

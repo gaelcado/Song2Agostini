@@ -1,0 +1,19 @@
+{
+  "name": "site-christophe-arent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Site de Christophe Arent : catalogue, contact et vente en ligne (Stripe Checkout).",
+  "scripts": {
+    "build": "python3 build.py",
+    "start": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning server/index.mjs",
+    "contacts:export": "node --disable-warning=ExperimentalWarning scripts/export-contacts.mjs",
+    "dev": "npm run build && npm start"
+  },
+  "engines": {
+    "node": ">=22.9"
+  },
+  "dependencies": {
+    "stripe": "^23.0.0"
+  }
+}

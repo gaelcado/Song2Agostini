@@ -1,0 +1,158 @@
+[
+  {
+    "slug": "blues-mood",
+    "title": "Blues Mood",
+    "subtitle": "Le groove en 12/8",
+    "category": "pedagogie",
+    "access": "gratuit",
+    "formats": [
+      "MP3",
+      "PDF"
+    ],
+    "image": "/images/blues-mood.webp",
+    "color": "lilac",
+    "chips": [
+      "MP3",
+      "PDF",
+      "3 pages"
+    ],
+    "tempo": "177",
+    "description": "Une partition de batterie en 12/8 et son enregistrement pour travailler la mise en place, écouter les nuances et jouer avec la musique.",
+    "audio": "/audio/blues-mood.mp3",
+    "delivery": {
+      "mode": "free",
+      "files": [
+        {
+          "label": "MP3",
+          "file": "blues-mood.mp3"
+        },
+        {
+          "label": "Partition PDF",
+          "file": "blues-mood.pdf"
+        }
+      ]
+    }
+  },
+  {
+    "slug": "deluxe-michael",
+    "title": "Deluxe Michael",
+    "subtitle": "Écouter, lire et jouer",
+    "category": "pedagogie",
+    "access": "gratuit",
+    "formats": [
+      "MP3",
+      "PDF"
+    ],
+    "image": "/images/deluxe-michael.webp",
+    "color": "gold",
+    "chips": [
+      "MP3",
+      "PDF",
+      "3 pages"
+    ],
+    "description": "Un support pour votre pratique de la batterie : la partition et son fichier audio réunis au même endroit. Écoutez le morceau, puis suivez la partition à votre rythme.",
+    "audio": "/audio/deluxe-michael.mp3",
+    "delivery": {
+      "mode": "free",
+      "files": [
+        {
+          "label": "MP3",
+          "file": "deluxe-michael.mp3"
+        },
+        {
+          "label": "Partition PDF",
+          "file": "deluxe-michael.pdf"
+        }
+      ]
+    }
+  },
+  {
+    "slug": "songologia",
+    "title": "Songología",
+    "subtitle": "Une création de Christophe Arent",
+    "category": "creations",
+    "access": "payant",
+    "formats": [
+      "MP3",
+      "PDF"
+    ],
+    "image": "/images/songologia.webp",
+    "color": "teal",
+    "chips": [
+      "MP3",
+      "PDF",
+      "5 pages"
+    ],
+    "tempo": "139",
+    "description": "Une création de Christophe Arent à découvrir à travers son enregistrement et sa partition de batterie. Le pack réunit le morceau en MP3 et la partition PDF.",
+    "audio": "/audio/songologia-extrait.mp3",
+    "excerpt": true,
+    "sale": {
+      "priceCents": 900,
+      "currency": "eur",
+      "stripePriceId": null
+    },
+    "delivery": {
+      "mode": "paid",
+      "files": [
+        {
+          "label": "MP3",
+          "file": "songologia.mp3"
+        },
+        {
+          "label": "Partition PDF",
+          "file": "songologia.pdf"
+        }
+      ]
+    }
+  },
+  {
+    "slug": "timba-drums",
+    "title": "Timba Drums",
+    "subtitle": "Batterie, timbales & congas",
+    "category": "pedagogie",
+    "access": "payant",
+    "formats": [
+      "Méthode"
+    ],
+    "image": "/images/timba-drums.webp",
+    "color": "sand",
+    "method": true,
+    "cardNote": "Batterie, timbales & congas",
+    "chips": [
+      "Méthode"
+    ],
+    "description": "Une méthode de Christophe Arent consacrée à la batterie, aux timbales et aux congas. Publiée en 2018 chez Lulu, elle prolonge son travail autour des percussions et des musiques cubaines."
+  },
+  {
+    "slug": "objectif-batterie",
+    "title": "Objectif Batterie",
+    "subtitle": "Les premiers pas derrière les fûts",
+    "category": "pedagogie",
+    "access": "payant",
+    "formats": [
+      "Méthode",
+      "PDF"
+    ],
+    "image": "/images/objectif-batterie.webp",
+    "color": "blue",
+    "method": true,
+    "level": "Débutant",
+    "cardNote": "Batterie · Débutant",
+    "chips": [
+      "Méthode",
+      "PDF",
+      "Débutant"
+    ],
+    "description": "La méthode de batterie pour débutant de Christophe Arent, publiée chez Lulu en 2026. Découvrez un extrait de 19 pages avant de retrouver la méthode chez l’éditeur.",
+    "delivery": {
+      "mode": "free",
+      "files": [
+        {
+          "label": "Extrait PDF",
+          "file": "objectif-batterie-extrait.pdf"
+        }
+      ]
+    }
+  }
+]

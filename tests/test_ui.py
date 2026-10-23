@@ -279,7 +279,8 @@ def test_product_uses_audio_downbeats_without_reference(local_server):
     data = completed(server, auth, upload(server, auth, "morceau.wav"))
     assert data["status"] == "completed"
     assert len(calls) == 1
-    assert calls[0]["config"] == {"separate_drums": True, "compact": True, "grid_engine": "beat_this"}
+    assert calls[0]["config"] == {"separate_drums": True, "compact": True, "grid_engine": "beat_this",
+                                  "variable_meter": True, "drum_downbeat_cues": True, "cymbal_streams_as_ride": True}
     assert calls[0]["piece_id"] == "piece_01" and calls[0]["title"] == "morceau"
     assert data["warnings"] == ["Grille à vérifier."]
     for url in data["artifacts"].values():
@@ -328,3 +329,11 @@ def test_missing_editor_returns_actionable_error(local_server, monkeypatch):
     completed(server, auth, job)
     status, _, body = request(server, 'POST', f'/api/jobs/{job}/open-musescore', headers=auth)
     assert status == 503 and 'MusicXML' in json.loads(body)['error']
+
+
+def test_summary_lists_variable_signatures_most_frequent_first(tmp_path):
+    (tmp_path / "notation").mkdir()
+    (tmp_path / "notation/notation.json").write_text(json.dumps({"measure_signatures": ["4/4", "5/4", "4/4", "4/4"], "measures": 4}))
+    (tmp_path / "grid.json").write_text(json.dumps({"time_signature": "4/4", "bar_evidence": {"status": "inferred_hypothesis"}}))
+    details = summarize(tmp_path, {})
+    assert details["time_signature"] == "4/4 · 5/4" and details["meter_status"] == "candidate"
