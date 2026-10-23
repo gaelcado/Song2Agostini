@@ -1,3 +1,11 @@
+## Développement transféré sur server-cado — 23 octobre 2026
+
+Code en cours sauvegardé dans `60b8405` et poussé sur `origin/main`, avec les sources du site Christophe Arent. Audios, photos, références, SQLite, modèles et résultats restent hors Git. Copie privée SSH de 2 959 235 104 octets vers `/home/gaelcado/projects/christophe-avon`, originaux Mac conservés ; contrôle rsync par sommes de contrôle sans écart de contenu privé. Cinq liens absolus internes adaptés côté serveur, cibles d'origine journalisées ; rapports historiques non réécrits. SQLite `quick_check` réussi.
+
+Ubuntu x86_64, Python 3.11.17 utilisateur, quatre environnements Linux isolés : app, ADTOF, Demucs et Beat This. Imports et cohérence des dépendances réussis, trois poids existants vérifiés par SHA-256. Runtime distinct `work/linux-runtime/` ; aucun nouveau téléchargement de modèle ni transcription. 258 tests logiciels réussis sur le Mac (Python 3.11.14) et sur le serveur (9,40 s au contrôle final). Interface HTTP locale : 200 ; site Node 24 : `npm ci`, construction et syntaxe JavaScript réussies. Preuves serveur : `work/migration-server-cado/`, `.migration-tools/` et `work/linux-runtime/runtime-install.json`.
+
+Limites : FFmpeg, FFprobe et MuseScore absents, donc `ready: false`, chaîne audio→PDF Linux non testée. Fenêtre desktop Linux et fidélité musicale non évaluées pendant ce transfert. Authentification GitHub propre au serveur encore à configurer pour les futurs push ; identité de commit configurée, lecture publique vérifiée. Les commits de migration sont poussés depuis le Mac. Reprise et tunnel SSH : [developpement-server-cado.md](developpement-server-cado.md).
+
 ## Boucle de vérification automatique — 17 octobre 2026
 
 Le retour musicien hebdomadaire est complété par un vérificateur automatique (`docs/boucle-automatique.md`) : références réelles saisies par l'agent (Perfect Strangers, Deluxe Michael, Crazy, Heathens ; non validées humainement), MIDI GMD tech_01–09 et OGA bench_02/08. Métrique principale : note écrite dans la bonne mesure, au bon temps, sur le bon instrument (MusicXML expansé). L'utilisateur a demandé un travail sans sous-agents : séparation recherche/vérification seulement logique, réglages sur moyennes.

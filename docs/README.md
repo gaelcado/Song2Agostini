@@ -1,6 +1,6 @@
 # Documentation technique
 
-Installation et distribution : [installation-technique.md](installation-technique.md), [packaging.md](packaging.md), [platform-support.md](platform-support.md).
+Installation et distribution : [installation-technique.md](installation-technique.md), [developpement-server-cado.md](developpement-server-cado.md), [packaging.md](packaging.md), [platform-support.md](platform-support.md).
 
 Produit et moteur : [handoff-produit-et-simplification.md](handoff-produit-et-simplification.md), [interface.md](interface.md), [notation.md](notation.md), [tools.md](tools.md).
 
